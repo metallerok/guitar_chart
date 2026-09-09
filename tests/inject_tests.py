@@ -44,14 +44,15 @@ TEST_JS = r"""
     const dispBtns = [...document.querySelectorAll('#displayRow button')];
     ok('display buttons exact', JSON.stringify(dispBtns.map(b => b.textContent)) === JSON.stringify(['DEGREES','NOTES','INTERVALS']));
     ok('degrees mode default', window.__APP.state.display === 'deg');
-    ok('12 root chips', document.querySelectorAll('#rootRow button').length === 12);
     ok('12 key chips', document.querySelectorAll('#keyRow button').length === 12);
 
     // ---------- movable table ----------
     ok('23 movable rows', document.querySelectorAll('#movBody tr').length === 23);
     ok('69 movable diagrams', document.querySelectorAll('#movBody svg').length === 69);
-    // transpose root to F: first movable diagram (maj r6) must become F major barre at fret 1
-    [...document.querySelectorAll('#rootRow button')].find(b => b.textContent === 'F').click();
+    // no separate root chips: transposition follows the selected chord.
+    // Pick F maj (basic chord, 6th letter column) -> the first movable
+    // diagram (maj r6) must become F major barre at fret 1
+    document.querySelector('#basicBody tr:first-child td:nth-child(7)').click();  // F maj
     const firstDots = [...document.querySelectorAll('#movBody tr:first-child td:nth-child(2) .cdot')];
     const pcs = [...new Set(firstDots.map(g => +g.dataset.pc))].sort((a, b) => a - b);
     ok('F maj r6 pcs = F A C', JSON.stringify(pcs) === JSON.stringify([0, 5, 9]));
@@ -79,9 +80,10 @@ TEST_JS = r"""
     document.querySelector('#basicBody tr:first-child td:nth-child(2)').click();  // A maj
     ok('basic click selects A maj', S.sel.root === 9 && S.sel.type === 'maj');
     ok('formula follows sel', (document.querySelector('#formulaBody tr.on') || {dataset:{}}).dataset.ftype === 'maj');
-    // back to C maj for the rest of the run
+    // back to C major for the rest of the run — the key chip alone must
+    // also resolve the chord selection to the tonic triad
     [...document.querySelectorAll('#keyRow button')].find(b => b.textContent === 'C').click();
-    [...document.querySelectorAll('#rootRow button')].find(b => b.textContent === 'C').click();
+    ok('key chip resolves tonic chord', S.sel.root === 0 && S.sel.type === 'maj');
 
     // ---------- formula ----------
     ok('25 formula rows', document.querySelectorAll('#formulaBody tr').length === 25);
@@ -97,6 +99,11 @@ TEST_JS = r"""
     ok('cof G seg exists', !!gSeg);
     gSeg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     ok('key = G after cof click', window.__APP.state.keyPc === 7);
+    // a wheel ring sets the key AND its tonic chord, so the fretboard
+    // chord mode / movable root always follow
+    ok('cof ring click resolves tonic triad', S.sel.root === 7 && S.sel.type === 'maj');
+    ok('movable table follows wheel chord',
+      document.getElementById('movRootLabel').textContent.indexOf('G') !== -1);
     ok('cof center label G', [...document.querySelectorAll('#cofSvg .cof-center-big')].some(t => t.textContent === 'G'));
     // names mode labels every ring as a chord
     ok('names mode labels chords (Em)', [...document.querySelectorAll('#cofSvg text')].some(t => t.textContent === 'Em'));
@@ -150,6 +157,13 @@ TEST_JS = r"""
     ok('center chip G = V', document.getElementById('centerChip').textContent.indexOf('V') !== -1);
     window.__APP.toggleCenter(5);   // center on F = IV of C major
     ok('center chip F = IV', document.getElementById('centerChip').textContent.indexOf('IV') !== -1);
+    // the center must stay visible in every filter: in CHORD mode a
+    // non-chord-tone center appears as a plain dotted mark with the ring
+    window.__APP.toggleCenter(9);   // A: scale tone, not a G7 chord tone
+    [...document.querySelectorAll('#fretFilterRow button')].find(b => b.textContent === 'CHORD').click();
+    ok('center visible in chord filter',
+      [...document.querySelectorAll('#fretSvg .g-mark.plain')].some(g => g.querySelector('.cring')));
+    [...document.querySelectorAll('#fretFilterRow button')].find(b => b.textContent === 'BOTH').click();
     // the center is a marker only: scale tones must keep their scale degrees
     // (C stays 1, A stays 6 — the old center override mislabelled them 7 and 4)
     const scaleTexts = [...document.querySelectorAll('#fretSvg .g-mark.scale text')].map(t => t.textContent);
@@ -192,6 +206,64 @@ TEST_JS = r"""
     ok('light theme persisted', JSON.parse(localStorage.getItem('guitar-poster-v1')).theme === 'light');
     [...document.querySelectorAll('#themeRow button')].find(b => b.textContent === 'DARK').click();
     ok('back to dark', document.body.classList.contains('dark') && S.theme === 'dark');
+
+    // ---------- tonnetz (degree lattice) ----------
+    ok('tonnetz 37 nodes', document.querySelectorAll('#tzSvg .tz-node').length === 37);
+    const tzPanel = document.getElementById('tzSvg').closest('section');
+    const kcPanel = document.getElementById('keyChordsAux').closest('section');
+    ok('tonnetz sits above key chords',
+      !!(tzPanel.compareDocumentPosition(kcPanel) & Node.DOCUMENT_POSITION_FOLLOWING));
+    const tzTonic = document.querySelector('#tzSvg .tz-node[data-pc="0"]');
+    ok('tonnetz tonic label 1', !!tzTonic && tzTonic.querySelector('text').textContent === '1');
+    // G7 is still selected: its pcs appear in degree space {7,11,2,5} (key C)
+    const tzChordPcs = [...new Set([...document.querySelectorAll('#tzSvg .tz-node.tz-chord')]
+      .map(g => +g.dataset.pc))].sort((a, b) => a - b);
+    ok('tonnetz highlights G7 pcs', JSON.stringify(tzChordPcs) === JSON.stringify([2, 5, 7, 11]));
+    ok('tonnetz overlay only for plain triads',
+      document.querySelector('#tzSvg .tz-tri').style.display === 'none' &&
+      [...document.querySelectorAll('#tzSvg .tz-badge')].every(b => b.style.display === 'none'));
+    window.__APP.selectChord(7, 'maj');
+    ok('tonnetz triangle for maj', document.querySelector('#tzSvg .tz-tri').style.display !== 'none');
+    window.__APP.tzClick(46, -79.674 / 3);   // interior of the tonic major triangle
+    ok('tzClick selects I major', S.sel.root === 0 && S.sel.type === 'maj');
+    // reverse sync: a non-tonic triangle click lights up its wheel ring
+    window.__APP.tzClick(138, -79.674 / 3);  // G major triangle; the key stays C
+    ok('tzClick selects non-tonic triad', S.sel.root === 7 && S.sel.type === 'maj' && S.keyPc === 0);
+    const wheelOn = [...document.querySelectorAll('#cofSvg .cof-seg.on')];
+    ok('tonnetz triangle highlights wheel', wheelOn.length === 1 &&
+      wheelOn[0].dataset.pc === '7' && !wheelOn[0].classList.contains('dimg'));
+    document.querySelector('#tzSvg .tz-node[data-pc="7"]')
+      .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    ok('tonnetz vertex click sets center', S.center === 7);
+    ok('tonnetz center ring visible',
+      [...document.querySelectorAll('#tzSvg .tz-cring')].some(c => c.style.display !== 'none'));
+    dispBtns.find(b => b.textContent === 'NOTES').click();
+    ok('tonnetz note labels', tzTonic.querySelector('text').textContent === 'C');
+    dispBtns.find(b => b.textContent === 'INTERVALS').click();
+    ok('tonnetz interval labels', [...document.querySelectorAll('#tzSvg .tz-node text')]
+      .some(t => t.textContent === 'P5'));
+    dispBtns.find(b => b.textContent === 'DEGREES').click();
+    [...document.querySelectorAll('#tzInvRow button')].find(b => b.textContent === '1ST').click();
+    ok('tonnetz inversion seg', S.tzInv === 1 &&
+      document.getElementById('tzHdr').textContent.indexOf('1st') !== -1);
+    [...document.querySelectorAll('#tzInvRow button')].find(b => b.textContent === 'ROOT').click();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+
+    // ---------- rhythm cards (reference) + generator ----------
+    ok('16 sixteenth cards', document.querySelectorAll('#rGrid16 .rpatt').length === 16);
+    ok('8 triplet cards', document.querySelectorAll('#rGridT .rpatt').length === 8);
+    ok('rhythm lives in the right column', !!document.querySelector('.col-right #rhythmSec'));
+    const outEmpty = document.getElementById('rhythmOut').innerHTML;
+    document.querySelectorAll('#rGridT .rpatt')[0].click();
+    ok('cards are reference only (no click generation)',
+      document.getElementById('rhythmOut').innerHTML === outEmpty);
+    [...document.querySelectorAll('#rhythmGenRow button')].find(b => b.textContent === '16TH').click();
+    ok('generator deals two 4-slot bars',
+      document.querySelectorAll('#rhythmOut .rmeasure').length === 2 &&
+      [...document.querySelectorAll('#rhythmOut .rbeat')].every(b => b.querySelectorAll('.rcell').length === 4));
+    const rhythmBefore = document.getElementById('rhythmOut').innerHTML;
+    [...document.querySelectorAll('#rhythmGenRow button')].find(b => b.textContent.indexOf('NEW') !== -1).click();
+    ok('regenerate deals a new rhythm', document.getElementById('rhythmOut').innerHTML !== rhythmBefore);
 
     // ---------- keyboard: arrows change key ----------
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));

@@ -8,13 +8,13 @@ python3 tests/inject_tests.py
 
 mkdir -p tmp/ffprof-t1 tmp/ffprof-t2 tmp/ffprof-t3
 firefox --no-remote --headless --profile "$PWD/tmp/ffprof-t1" \
-  --window-size=1500,3900 --screenshot "$PWD/tmp/gp-test.png" \
+  --window-size=1500,5200 --screenshot "$PWD/tmp/gp-test.png" \
   "file://$PWD/tmp/index-test.html" 2>/dev/null
 firefox --no-remote --headless --profile "$PWD/tmp/ffprof-t2" \
-  --window-size=1500,3900 --screenshot "$PWD/tmp/gp-scenario.png" \
+  --window-size=1500,5200 --screenshot "$PWD/tmp/gp-scenario.png" \
   "file://$PWD/tmp/index-scenario.html" 2>/dev/null
 firefox --no-remote --headless --profile "$PWD/tmp/ffprof-t3" \
-  --window-size=1500,3900 --screenshot "$PWD/tmp/gp-default.png" \
+  --window-size=1500,5200 --screenshot "$PWD/tmp/gp-default.png" \
   "file://$PWD/index.html" 2>/dev/null
 rm -rf tmp/ffprof-t1 tmp/ffprof-t2 tmp/ffprof-t3
 

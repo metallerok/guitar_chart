@@ -117,7 +117,6 @@ table.mov thead th{font-size:10px;letter-spacing:.1em;background:var(--paper2)}
 table.mov td.cell{padding:3px}
 table.mov td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background:var(--paperhi)}
 .mov svg{display:block;width:100%;height:auto}
-.root-chips{padding:6px 8px;border-bottom:1px solid var(--line)}
 
 /* ---------- basic chords ---------- */
 table.bas td{padding:3px 2px}
@@ -202,6 +201,48 @@ table.keys td.kc.on small{color:var(--auxdim)}
 .scale-tabs button.on{background:var(--selbg);color:var(--selfg)}
 .scale-tabs button[data-scale="harmminor"]{margin-left:12px}
 
+/* ---------- tonnetz (degree lattice) ---------- */
+#tzSvg{display:block;width:100%;max-width:620px;height:auto;margin:0 auto;cursor:crosshair}
+#tzSvg .tz-arrow{fill:var(--mid)}
+#tzSvg .tz-edge{stroke:var(--line);stroke-width:1.3}
+#tzSvg .tz-edge.eM3{stroke-dasharray:7 4}
+#tzSvg .tz-edge.em3{stroke-dasharray:2 3.5}
+#tzSvg .tz-edge.hot{stroke:var(--ink);stroke-width:2.4;stroke-dasharray:none}
+#tzSvg .tz-axis{stroke:var(--mid);stroke-width:1.1}
+#tzSvg .tz-axlbl{fill:var(--mid);font-size:10.5px;letter-spacing:.05em}
+#tzSvg .tz-ghost{fill:none;stroke:var(--mid);stroke-width:1.2;stroke-dasharray:4 4}
+#tzSvg .tz-tri{fill:var(--wash);fill-opacity:.6;stroke:var(--ink);stroke-width:2;stroke-linejoin:round}
+#tzSvg .tz-trl{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+#tzSvg .tz-tre{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:3 5;opacity:.5}
+#tzSvg .tz-node{cursor:pointer}
+#tzSvg .tz-node circle.dot{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+#tzSvg .tz-node:hover circle.dot{stroke-width:2.6}
+#tzSvg .tz-node.tz-chord circle.dot{fill:var(--selbg)}
+#tzSvg .tz-node text{font-size:15px;font-weight:600;text-anchor:middle;pointer-events:none}
+#tzSvg .tz-node text.small{font-size:10px}
+#tzSvg .tz-tring{fill:none;stroke:var(--ink);stroke-width:1.2;opacity:.75}
+#tzSvg .tz-cring{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.5}
+#tzSvg .tz-bass circle{fill:none;stroke:var(--ink);stroke-width:2}
+#tzSvg .tz-badge rect{fill:var(--selbg)}
+#tzSvg .tz-badge text{font-size:10px;font-weight:700;text-anchor:middle}
+#tzSvg .tz-hintint{fill:var(--mid);font-size:9.5px;font-weight:600;text-anchor:middle;pointer-events:none}
+
+/* ---------- rhythm practice ---------- */
+.rwrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 8px 4px}
+@media(max-width:1240px){.rwrap{grid-template-columns:1fr}}
+.rgrid{display:flex;flex-wrap:wrap;gap:6px}
+.rpatt{display:inline-flex;gap:3px;border:1px solid var(--line);padding:4px}
+.rcell{width:20px;height:26px;border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700}
+.rcell.o{background:var(--selbg);color:var(--selfg)}
+.rcell.x{color:var(--mid)}
+.rout{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 8px 12px;border-top:1px solid var(--line);min-height:58px}
+.rempty{font-size:10.5px;color:var(--mid)}
+.rmeasure{display:flex;align-items:center;gap:8px}
+.rmnum{font-size:9.5px;color:var(--mid);font-weight:700}
+.rbeat{display:flex;gap:3px;padding:3px 5px;border:1px solid var(--line);background:var(--paper2)}
+.rbeat .rcell{width:18px;height:24px;font-size:9.5px}
+.rbarline{width:3px;height:42px;background:var(--ink)}
+
 /* ---------- cross-highlight ---------- */
 [data-pc].xhl{box-shadow:inset 0 0 0 2px var(--ink)}
 g[data-pc].xhl circle.dot{stroke-width:2.8}
@@ -242,7 +283,7 @@ span[data-pc].xhl{background:var(--ink);color:var(--selfg);box-shadow:none}
 
 /* ---------- footer credit ---------- */
 footer.info{
-  margin:0 18px 12px;border-top:2px solid var(--ink);padding-top:8px;
+  margin:14px 18px 12px;border-top:2px solid var(--ink);padding-top:8px;
   font-size:10.5px;color:var(--mid);
 }
 
@@ -264,13 +305,12 @@ footer.info{
   <!-- left: moveable chords -->
   <section class="panel" id="movableSec">
     <div class="bar"><span>MOVEABLE CHORDS</span><span class="bar-aux" id="movRootLabel"></span></div>
-    <div class="chips root-chips" id="rootRow"></div>
     <table class="mov">
       <thead><tr><th></th><th>ROOT 6</th><th>ROOT 5</th><th>ROOT 4</th></tr></thead>
       <tbody id="movBody"></tbody>
     </table>
-    <p class="hint">One shape for every root — pick a root and all 23 diagrams transpose, the shape never changes.
-    Hover a dot for string · fret · note · degree · interval. Click a diagram to select that chord everywhere.</p>
+    <p class="hint">One shape for every root — the root follows the selected chord, so all 23 diagrams transpose together.
+    Hover a dot for string · fret · note · degree · interval. Click a diagram to select that chord type at the current root.</p>
   </section>
 
   <!-- right column -->
@@ -305,6 +345,20 @@ footer.info{
     </section>
 
     <section class="panel">
+      <div class="bar">
+        <span>TONNETZ</span>
+        <div class="seg" id="tzInvRow"></div>
+        <span class="bar-aux bar-mono" id="tzHdr"></span>
+      </div>
+      <div class="fretbox">
+        <svg id="tzSvg" viewBox="-405 -335 810 670" role="img" aria-label="Tonnetz lattice of scale degrees"></svg>
+      </div>
+      <p class="hint">Degrees on a harmonic lattice: one step right = perfect fifth, up-right = major third, down-right = minor
+      third (dashed). Upward triangles are major triads, downward minor — click inside one to select that chord; dim &amp; aug
+      run along the axes. Click a vertex to mark the local center; the ring follows the inversion.</p>
+    </section>
+
+    <section class="panel">
       <div class="bar"><span>KEY CHORDS</span><span class="bar-aux" id="keyChordsAux"></span></div>
       <div class="kwrap">
         <div>
@@ -316,6 +370,27 @@ footer.info{
           <table class="keys" id="minKeyTable"></table>
         </div>
       </div>
+    </section>
+
+    <!-- rhythm practice: pattern cards (reference) + two-bar generator -->
+    <section class="panel" id="rhythmSec">
+      <div class="bar">
+        <span>RHYTHM</span>
+        <span class="bar-aux">o = play · x = rest</span>
+        <span class="bar-spring"></span>
+        <div class="seg" id="rhythmGenRow"></div>
+      </div>
+      <div class="rwrap">
+        <div>
+          <div class="ktitle">SIXTEENTHS — 4 PER BEAT</div>
+          <div class="rgrid" id="rGrid16"></div>
+        </div>
+        <div>
+          <div class="ktitle">TRIPLETS — 3 PER BEAT</div>
+          <div class="rgrid" id="rGridT"></div>
+        </div>
+      </div>
+      <div class="rout" id="rhythmOut"><span class="rempty">pick a pattern type — two random bars appear here</span></div>
     </section>
 
   </div>
@@ -352,7 +427,7 @@ footer.info{
         <div class="chips" id="keyRow"></div>
         <div class="seg" id="keyModeRow"></div>
       </div>
-      <span class="sub">drives the circle of fifths, the key-chord tables and the fretboard scale</span>
+      <span class="sub">one source of truth: wheel, key tables, scale — and the tonic chord</span>
     </div>
     <div class="ctrl-block">
       <span class="lbl">LOCAL CENTER</span>
@@ -389,6 +464,13 @@ const DEG_NAMES = ['1','♭2','2','♭3','3','4','♭5','5','♭6','6','♭7','7
 
 // Interval quality name per semitone offset.
 const INT_NAMES = ['P1','m2','M2','m3','M3','P4','♭5','P5','m6','M6','m7','M7'];
+
+// Traditional function names (tonnetz tooltips), indexed by degree offset.
+const DEG_FN = {
+  0:'tonic', 1:'neapolitan', 2:'supertonic', 3:'minor 3rd', 4:'mediant',
+  5:'subdominant', 6:'tritone', 7:'dominant', 8:'minor 6th',
+  9:'submediant', 10:'subtonic', 11:'leading tone'
+};
 
 // Open string pitch classes, string 6 (low E) first.
 const TUNING = [4, 9, 2, 7, 11, 4];
@@ -558,6 +640,15 @@ const MINOR_KEY = [
   { rn:'VII',  deg:10, t:'maj',  s7:'maj7' }
 ];
 
+/* ---------- rhythm practice patterns ----------
+   'o' = played hit, 'x' = rest. Sixteenths: 4 slots per beat,
+   triplets: 3 slots per beat. */
+const RHYTHM = {
+  sixteenths: ['oxxx','ooxx','ooox','oooo','xxox','xxoo','xooo','xxxx',
+               'xoxx','xoox','xxxo','oxox','oxxo','oxoo','ooxo','xoxo'],
+  triplets:   ['oxx','oox','ooo','xxx','xoo','xxo','xox','oxo']
+};
+
 /* ---------- pure helpers ---------- */
 
 // Fret of pitch class `pc` on string `str` (6..1), lowest octave position.
@@ -653,8 +744,8 @@ function verifyShapes(){
 
 // Export for the test harness.
 if (typeof window !== 'undefined'){
-  window.__MODEL = { NOTES, DEG_NAMES, INT_NAMES, TUNING, CHORDS, SHAPES, BASIC, BASIC_ROOTS,
-    BASIC_ROWS, SCALES, CIRCLE, MAJOR_KEY, MINOR_KEY, MOVABLE_ORDER, FORMULA_GROUPS,
+  window.__MODEL = { NOTES, DEG_NAMES, INT_NAMES, DEG_FN, TUNING, CHORDS, SHAPES, BASIC, BASIC_ROOTS,
+    BASIC_ROWS, SCALES, CIRCLE, MAJOR_KEY, MINOR_KEY, RHYTHM, MOVABLE_ORDER, FORMULA_GROUPS,
     rootFret, shapeNotes, basicNotes, chordDegLabel, chordIntLabel, scaleDegLabel,
     chordName, keyChords, verifyShapes };
 }
@@ -676,9 +767,9 @@ function defaultState(){
   return {
     keyPc: 0,            // selected key tonic pitch class
     keyMode: 'major',    // 'major' | 'minor'
-    root: 0,             // root pc for moveable diagrams
     display: 'deg',      // 'deg' | 'note' | 'int'  (degrees first by design)
     sel: { root: 0, type: 'maj' },   // selected chord (drives sync everywhere)
+    tzInv: 0,            // tonnetz triad inversion (display-only, 0..2)
     scale: 'ionian',     // scale shown on the fretboard (scale tabs)
     center: null,        // local harmonic center pc (null = off); marker only
     cofMode: 'names',    // 'names' | 'romans' | 'functions'
@@ -774,9 +865,8 @@ document.addEventListener('pointerout', e => {
 /* ============================================================
    Actions (the sync core)
    ============================================================ */
-function selectChord(rootPc, typeId, keepRoot){
+function selectChord(rootPc, typeId){
   state.sel = { root: rootPc, type: typeId };
-  if (!keepRoot) state.root = rootPc;
   renderAll();
 }
 function selectKey(pc, mode){
@@ -789,11 +879,10 @@ function selectKey(pc, mode){
       state.scale = mode === 'minor' ? 'aeolian' : 'ionian';
     }
   }
-  // the wheel highlights one thing at a time: picking a key clears a
-  // wheel-selected diminished chord (it becomes the tonic triad)
-  if (state.sel && state.sel.type === 'dim'){
-    state.sel = { root: pc, type: state.keyMode === 'minor' ? 'min' : 'maj' };
-  }
+  // one source of truth: the key resolves the chord selection to its tonic
+  // triad, so every view (fretboard chord mode, moveable root, formula
+  // notes, tonnetz overlay) follows a key change
+  state.sel = { root: pc, type: state.keyMode === 'minor' ? 'min' : 'maj' };
   renderAll();
 }
 function toggleCenter(pc){
@@ -914,26 +1003,27 @@ function buildMovable(){
     const tr = h('tr', {}, tb);
     const lbl = h('td', { class:'rowlbl', 'data-type':t }, tr);
     lbl.textContent = CHORDS[t].name;
-    lbl.addEventListener('click', () => selectChord(state.root, t));
+    lbl.addEventListener('click', () => selectChord(state.sel.root, t));
     for (const col of ['r6','r5','r4']){
       const td = h('td', { class:'cell', 'data-col':col, 'data-type':t }, tr);
-      td.addEventListener('click', () => selectChord(state.root, t));
+      td.addEventListener('click', () => selectChord(state.sel.root, t));
     }
   }
 }
 function renderMovable(){
-  $('movRootLabel').textContent = 'root: ' + NOTES[state.root];
+  // the moveable table transposes with the selected chord's root — no
+  // separate root control, the chord selection is the single source
+  $('movRootLabel').textContent = 'root: ' + NOTES[state.sel.root];
   const tb = $('movBody');
   for (const tr of tb.children){
     const t = tr.children[0].dataset.type;
-    tr.children[0].classList.toggle('on', state.sel && state.sel.type === t && state.sel.root === state.root);
+    const on = !!(state.sel && state.sel.type === t);
+    tr.children[0].classList.toggle('on', on);
     for (let c = 1; c <= 3; c++){
       const td = tr.children[c];
-      const col = ['r6','r5','r4'][c - 1];
       td.innerHTML = '';
-      td.appendChild(movableDiagram(t, col, state.root));
-      td.classList.toggle('on', !!(state.sel && state.sel.type === t &&
-        rootFret(state.sel.root, +col[1]) === rootFret(state.root, +col[1]) && state.sel.root === state.root));
+      td.appendChild(movableDiagram(t, ['r6','r5','r4'][c - 1], state.sel.root));
+      td.classList.toggle('on', on);
     }
   }
 }
@@ -998,13 +1088,14 @@ function buildFormula(){
       const f = h('td', { class:'fform' }, tr);
       f.textContent = CHORDS[t].degs;
       const notes = h('td', { class:'fnotes' }, tr);
-      const pick = () => selectChord(state.root, t);
+      const pick = () => selectChord(state.sel.root, t);
       tr.addEventListener('click', pick);
     }
   }
 }
 function renderFormula(){
-  $('frmNotesHdr').textContent = 'NOTES of ' + NOTES[state.root];
+  // the NOTES column spells every formula from the selected chord's root
+  $('frmNotesHdr').textContent = 'NOTES of ' + NOTES[state.sel.root];
   const tb = $('formulaBody');
   for (const tr of tb.children){
     const t = tr.dataset.ftype;
@@ -1014,8 +1105,8 @@ function renderFormula(){
     const cell = tr.children[3];
     cell.innerHTML = '';
     for (const s of c.pcs){
-      const sp = h('span', { 'data-pc':(state.root + s) % 12 }, cell);
-      sp.textContent = NOTES[(state.root + s) % 12] + ' ';
+      const sp = h('span', { 'data-pc':(state.sel.root + s) % 12 }, cell);
+      sp.textContent = NOTES[(state.sel.root + s) % 12] + ' ';
     }
   }
 }
@@ -1114,12 +1205,20 @@ function renderCoF(){
     const a0 = c - 15 + GAP, a1 = c + 15 - GAP;
     const minPc = (seg.pc + 9) % 12;     // relative minor of the major above
     const dimPc = (seg.pc + 11) % 12;    // vii° of the major above
-    // the wheel highlights one thing at a time: a selected diminished
-    // chord suppresses the key highlight (and vice versa via selectKey)
-    const keyHl = !(state.sel && state.sel.type === 'dim');
-    const majSel = keyHl && state.keyPc === seg.pc && state.keyMode === 'major';
-    const minSel = keyHl && state.keyPc === minPc && state.keyMode === 'minor';
-    const dimSel = !!(state.sel && state.sel.type === 'dim' && state.sel.root === dimPc);
+    // the wheel highlights one thing at a time: a selected plain triad
+    // (maj/min/dim — picked on the wheel, in the tonnetz or the key tables)
+    // suppresses the key highlight and lights up on its own ring; extended
+    // chord types keep the key highlight
+    const selTriad = state.sel &&
+      ({ maj:'maj', min:'min', dim:'dim' })[state.sel.type] || null;
+    const keyHl = !selTriad;
+    const majSel = keyHl
+      ? (state.keyPc === seg.pc && state.keyMode === 'major')
+      : (selTriad === 'maj' && state.sel.root === seg.pc);
+    const minSel = keyHl
+      ? (state.keyPc === minPc && state.keyMode === 'minor')
+      : (selTriad === 'min' && state.sel.root === minPc);
+    const dimSel = !!(selTriad === 'dim' && state.sel.root === dimPc);
 
     // outer ring: major chords
     const po = el('path', { d:cofSegPath(124, 178, a0, a1), class:'cof-seg' + (majSel ? ' on' : ''),
@@ -1175,7 +1274,289 @@ function renderCoF(){
   const sub = el('text', { x:COFC.cx, y:COFC.cy + 13, class:'cof-center-sub', 'text-anchor':'middle' }, svg);
   sub.textContent = state.keyMode + (seg0.sig ? ' · ' + seg0.sig : '');
   $('cofHint').textContent = 'Clockwise = up a perfect fifth. Each sector: the major chord (outer), its relative minor ' +
-    '(middle) and its vii° diminished chord (inner). Click a ring to set the key or select the chord; tabs change the labels.';
+    '(middle) and its vii° diminished chord (inner). Clicking a ring sets the key with its tonic chord; the inner ring ' +
+    'selects the dim chord. A plain triad selected anywhere (tonnetz, tables) lights up on its ring; tabs change the labels.';
+}
+
+/* ============================================================
+   Tonnetz — degree lattice (synced with key, chord, center, display)
+   ============================================================ */
+const TZ = { SP:92, RADIUS:3, HIT:27 };
+TZ.HP = TZ.SP * Math.sqrt(3) / 2;
+const TRI_STEPS = { maj:[0,4,7], min:[0,3,7], dim:[0,3,6], aug:[0,4,8] };
+const TRI_DELTA = { 0:[0,0], 3:[1,-1], 4:[0,1], 6:[2,-2], 7:[1,0], 8:[0,2] };
+const INV_NAMES = ['root position', '1st inv', '2nd inv'];
+
+const tzNodes = [], tzMap = new Map(), tzEdges = [], tzEdgesBy = new Map();
+const tzKey = (i, j) => i + ',' + j;
+const tzPos = (i, j) => ({ x:TZ.SP * (i + j / 2), y:-TZ.HP * j });
+const tzCube = (i, j) => Math.max(Math.abs(i), Math.abs(j), Math.abs(i + j));
+const tzPc  = (i, j) => ((7 * i + 4 * j) % 12 + 12) % 12;
+
+let tzGhost, tzTriPoly, tzTriLine, tzTriExt, tzBass, tzHoverG;
+const tzBadges = [];
+
+function tzSvgPoint(e){
+  const svg = $('tzSvg');
+  const r = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+  const scale = Math.min(r.width / vb.width, r.height / vb.height);
+  const ox = (r.width - vb.width * scale) / 2;
+  const oy = (r.height - vb.height * scale) / 2;
+  return { x:(e.clientX - r.left - ox) / scale + vb.x,
+           y:(e.clientY - r.top - oy) / scale + vb.y };
+}
+
+// Triangle-interior hit in lattice coordinates: selects the major (upper)
+// or minor (lower) triad rooted there. Exposed for the test harness.
+function tzClick(x, y){
+  const beta = -y / TZ.HP;
+  const alpha = x / TZ.SP - beta / 2;
+  const i0 = Math.floor(alpha), j0 = Math.floor(beta);
+  const frac = alpha + beta - (i0 + j0);
+  const quality = frac <= 1 ? 'maj' : 'min';
+  const ri = i0, rj = frac <= 1 ? j0 : j0 + 1;
+  const root = tzMap.get(tzKey(ri, rj));
+  if (!root || tzCube(ri, rj) > TZ.RADIUS) return;
+  selectChord((state.keyPc + root.pc) % 12, quality);
+}
+
+function buildTonnetz(){
+  const svg = $('tzSvg');
+  const defs = el('defs', {}, svg);
+  const marker = el('marker', { id:'tzAh', viewBox:'0 0 10 10', refX:8, refY:5,
+    markerWidth:7, markerHeight:7, orient:'auto-start-reverse' }, defs);
+  el('path', { d:'M0 0 L10 5 L0 10 z', class:'tz-arrow' }, marker);
+
+  const gEdges = el('g', {}, svg);
+  const gGhost = el('g', {}, svg);
+  const gAxis  = el('g', {}, svg);
+  const gTri   = el('g', {}, svg);
+  const gNodes = el('g', {}, svg);
+  const gRings = el('g', {}, svg);
+  tzHoverG = el('g', {}, svg);
+
+  tzGhost = el('polygon', { class:'tz-ghost', style:'display:none' }, gGhost);
+
+  // lattice nodes (static DOM; render only toggles classes, texts, rings)
+  for (let i = -TZ.RADIUS; i <= TZ.RADIUS; i++){
+    for (let j = -TZ.RADIUS; j <= TZ.RADIUS; j++){
+      if (tzCube(i, j) > TZ.RADIUS) continue;
+      const p = tzPos(i, j);
+      const g = el('g', { class:'tz-node', transform:`translate(${p.x},${p.y})` }, gNodes);
+      const node = { i, j, pc:tzPc(i, j), x:p.x, y:p.y, g };
+      if (i === 0 && j === 0){
+        // lattice center = degree 1 = the key tonic, always ringed
+        el('circle', { class:'tz-tring', r:27 }, g);
+      }
+      node.ring = el('circle', { class:'tz-cring', r:28, style:'display:none' }, g);
+      el('circle', { class:'dot', r:23 }, g);
+      node.deg = el('text', { y:-3 }, g);
+      g.addEventListener('click', ev => {
+        ev.stopPropagation();
+        toggleCenter((state.keyPc + node.pc) % 12);
+      });
+      tzNodes.push(node);
+      tzMap.set(tzKey(i, j), node);
+    }
+  }
+
+  // edges: three canonical directions (fifths solid, M3 long dash, m3 dots)
+  for (const n of tzNodes){
+    for (const [di, dj, fam] of [[1, 0, ''], [0, 1, 'eM3'], [1, -1, 'em3']]){
+      const m = tzMap.get(tzKey(n.i + di, n.j + dj));
+      if (!m) continue;
+      const e = el('line', { class:'tz-edge ' + fam,
+        x1:n.x, y1:n.y, x2:m.x, y2:m.y }, gEdges);
+      const edge = { a:n, b:m, el:e };
+      tzEdges.push(edge);
+      for (const t of [n, m]){
+        if (!tzEdgesBy.has(t)) tzEdgesBy.set(t, []);
+        tzEdgesBy.get(t).push(edge);
+      }
+    }
+  }
+
+  // axis arrows labelled with the interval each direction gains
+  for (const ax of [[1, 0, 'P5'], [-1, 0, 'P4'], [0, 1, 'M3'],
+                    [0, -1, 'm6'], [1, -1, 'm3'], [-1, 1, 'M6']]){
+    const ux = TZ.SP * (ax[0] + ax[1] / 2), uy = -TZ.HP * ax[1];
+    el('line', { class:'tz-axis', x1:ux * 3.02, y1:uy * 3.02, x2:ux * 3.5, y2:uy * 3.5,
+      'marker-end':'url(#tzAh)' }, gAxis);
+    const t = el('text', { class:'tz-axlbl', x:ux * 3.85, y:uy * 3.85,
+      'text-anchor':'middle', 'dominant-baseline':'middle' }, gAxis);
+    t.textContent = ax[2];
+  }
+
+  tzTriExt  = el('line',  { class:'tz-tre', style:'display:none' }, gTri);
+  tzTriLine = el('line',  { class:'tz-trl', style:'display:none' }, gTri);
+  tzTriPoly = el('polygon',{ class:'tz-tri', style:'display:none' }, gTri);
+
+  tzBass = el('g', { class:'tz-bass', style:'display:none' }, gRings);
+  el('circle', { r:30 }, tzBass);
+  for (let k = 0; k < 3; k++){
+    const bg = el('g', { class:'tz-badge', style:'display:none' }, gRings);
+    el('rect', { x:-8.5, y:-8.5, width:17, height:17 }, bg);
+    tzBadges.push({ g:bg, t:el('text', { y:3.5 }, bg) });
+  }
+
+  // hover: ghost of the major triad + interval names on adjacent edges
+  svg.addEventListener('pointermove', e => {
+    const pt = tzSvgPoint(e);
+    let best = null, bd = 26 * 26;
+    for (const n of tzNodes){
+      const dx = n.x - pt.x, dy = n.y - pt.y, d = dx * dx + dy * dy;
+      if (d < bd){ bd = d; best = n; }
+    }
+    tzHoverG.innerHTML = '';
+    for (const ed of tzEdges) ed.el.classList.remove('hot');
+    if (!best){ tzGhost.style.display = 'none'; return; }
+    const a = tzMap.get(tzKey(best.i, best.j + 1));
+    const b = tzMap.get(tzKey(best.i + 1, best.j));
+    if (a && b){
+      tzGhost.setAttribute('points', `${best.x},${best.y} ${a.x},${a.y} ${b.x},${b.y}`);
+      tzGhost.style.display = '';
+    } else {
+      tzGhost.style.display = 'none';
+    }
+    for (const ed of (tzEdgesBy.get(best) || [])){
+      ed.el.classList.add('hot');
+      const other = ed.a === best ? ed.b : ed.a;
+      const t = el('text', { class:'tz-hintint',
+        x:(ed.a.x + ed.b.x) / 2, y:(ed.a.y + ed.b.y) / 2 - 6 }, tzHoverG);
+      t.textContent = INT_NAMES[(other.pc - best.pc + 12) % 12];
+    }
+  });
+  svg.addEventListener('pointerleave', () => {
+    tzGhost.style.display = 'none';
+    tzHoverG.innerHTML = '';
+    for (const ed of tzEdges) ed.el.classList.remove('hot');
+  });
+
+  // click: vertex toggles the local center, triangle interior selects the triad
+  svg.addEventListener('click', e => {
+    const pt = tzSvgPoint(e);
+    let hit = null, hd = TZ.HIT * TZ.HIT;
+    for (const n of tzNodes){
+      const dx = n.x - pt.x, dy = n.y - pt.y, d = dx * dx + dy * dy;
+      if (d < hd){ hd = d; hit = n; }
+    }
+    if (hit){ toggleCenter((state.keyPc + hit.pc) % 12); return; }
+    tzClick(pt.x, pt.y);
+  });
+}
+
+function renderTonnetz(){
+  const tonic = state.keyPc;
+  const sel = state.sel;
+  const relRoot = (sel.root - tonic + 12) % 12;
+  const chordPcs = new Set(CHORDS[sel.type].pcs.map(s => (relRoot + s) % 12));
+  const triadQ = ({ maj:'maj', min:'min', dim:'dim', aug:'aug' })[sel.type] || null;
+
+  // center marker: nearest lattice instance of the center degree
+  let focusNode = null;
+  if (state.center != null){
+    const cd = (state.center - tonic + 12) % 12;
+    let bs = Infinity;
+    for (const n of tzNodes){
+      if (n.pc !== cd) continue;
+      const s = tzCube(n.i, n.j) * 100 + Math.abs(n.x) + Math.abs(n.y);
+      if (s < bs){ bs = s; focusNode = n; }
+    }
+  }
+
+  for (const n of tzNodes){
+    const isChord = chordPcs.has(n.pc);
+    n.g.setAttribute('class', 'tz-node' + (isChord ? ' tz-chord' : ''));
+    n.g.dataset.pc = (tonic + n.pc) % 12;   // absolute pc: cross-highlight
+    const semiT = n.pc;
+    const semiC = (n.pc - relRoot + 12) % 12;
+    let label;
+    if (state.display === 'note') label = NOTES[(tonic + n.pc) % 12];
+    else if (isChord) label = state.display === 'int'
+      ? chordIntLabel(sel.type, semiC) : chordDegLabel(sel.type, semiC);
+    else label = state.display === 'int' ? INT_NAMES[semiT] : DEG_NAMES[semiT];
+    n.deg.textContent = label;
+    n.deg.classList.toggle('small', label.length > 2);
+    // inline fill: the svg text CSS rule would beat a fill attribute
+    n.deg.style.fill = isChord ? 'var(--selfg)' : 'var(--ink)';
+    n.ring.style.display = (focusNode === n) ? '' : 'none';
+    const absPc = (tonic + n.pc) % 12;
+    n.g.dataset.tip = `<span class="t-big">${NOTES[absPc]}</span> · ${DEG_FN[n.pc]}` +
+      `<br>degree ${DEG_NAMES[semiT]} · interval ${INT_NAMES[semiT]}` +
+      (isChord ? `<br><span class="t-mid">chord tone of ${chordName(sel.root, sel.type)}</span>` : '') +
+      (focusNode === n ? '<br><span class="t-mid">local center</span>' : '');
+  }
+
+  // triad overlay: triangle/line for the four plain triads, node glow only
+  // for the extended chord types
+  let tri = null;
+  if (triadQ){
+    const steps = TRI_STEPS[triadQ];
+    let best = null;
+    for (const n of tzNodes){
+      if (n.pc !== relRoot) continue;
+      const members = steps.map(s => {
+        const d = TRI_DELTA[s];
+        return tzMap.get(tzKey(n.i + d[0], n.j + d[1]));
+      });
+      const complete = members.every(Boolean);
+      const worst = Math.max(tzCube(n.i, n.j),
+        ...members.map(m => (m ? tzCube(m.i, m.j) : 9)));
+      const score = (complete ? 0 : 1000) + tzCube(n.i, n.j) * 10 + worst;
+      if (!best || score < best.score) best = { score, root:n, members, complete };
+    }
+    if (best && best.complete) tri = { steps, ...best };
+  }
+
+  const show = !!tri;
+  const collinear = triadQ === 'dim' || triadQ === 'aug';
+  tzTriPoly.style.display = (show && !collinear) ? '' : 'none';
+  tzTriLine.style.display = (show && collinear) ? '' : 'none';
+  tzTriExt.style.display = tzTriLine.style.display;
+  tzBass.style.display = show ? '' : 'none';
+
+  if (tri){
+    const P = [tri.root, tri.members[1], tri.members[2]];
+    if (collinear){
+      const p0 = P[0], p2 = P[2];
+      tzTriLine.setAttribute('x1', p0.x); tzTriLine.setAttribute('y1', p0.y);
+      tzTriLine.setAttribute('x2', p2.x); tzTriLine.setAttribute('y2', p2.y);
+      const ux = (p2.x - p0.x) / 2, uy = (p2.y - p0.y) / 2, ext = 0.85;
+      tzTriExt.setAttribute('x1', p0.x - ux * ext); tzTriExt.setAttribute('y1', p0.y - uy * ext);
+      tzTriExt.setAttribute('x2', p2.x + ux * ext); tzTriExt.setAttribute('y2', p2.y + uy * ext);
+    } else {
+      tzTriPoly.setAttribute('points', P.map(p => p.x + ',' + p.y).join(' '));
+    }
+    // voice badges 1-2-3 toward the centroid; the inversion rotates them
+    const cx = (P[0].x + P[1].x + P[2].x) / 3, cy = (P[0].y + P[1].y + P[2].y) / 3;
+    const inv = state.tzInv || 0;
+    const voicing = tri.steps.slice(inv).concat(tri.steps.slice(0, inv));
+    voicing.forEach((s, k) => {
+      const n = s === 0 ? tri.root : tri.members[tri.steps.indexOf(s)];
+      let ox, oy;
+      if (collinear){
+        const dx = P[2].x - P[0].x, dy = P[2].y - P[0].y, L = Math.hypot(dx, dy) || 1;
+        ox = -dy / L * 31; oy = dx / L * 31;
+      } else {
+        const dx = cx - n.x, dy = cy - n.y, L = Math.hypot(dx, dy) || 1;
+        ox = dx / L * 30; oy = dy / L * 30;
+      }
+      tzBadges[k].g.style.transform = `translate(${n.x + ox}px,${n.y + oy}px)`;
+      tzBadges[k].g.style.display = '';
+      tzBadges[k].t.textContent = k + 1;
+      tzBadges[k].t.style.fill = 'var(--selfg)';
+    });
+    for (let k = voicing.length; k < tzBadges.length; k++) tzBadges[k].g.style.display = 'none';
+    const bn = voicing[0] === 0 ? tri.root : tri.members[tri.steps.indexOf(voicing[0])];
+    tzBass.style.transform = `translate(${bn.x}px,${bn.y}px)`;
+  } else {
+    for (const b of tzBadges) b.g.style.display = 'none';
+  }
+
+  $('tzHdr').textContent = chordName(sel.root, sel.type) +
+    ' · ' + CHORDS[sel.type].degs +
+    (tri ? ' · ' + INV_NAMES[state.tzInv || 0] : '');
 }
 
 /* ============================================================
@@ -1314,10 +1695,15 @@ function renderFretboard(){
 
   const membership = pc => {
     const ch = selPcs.has(pc), sc = scalePcs.has(pc);
-    if (filt === 'chord') return ch ? 'chordt' : null;
-    if (filt === 'scale') return sc ? 'scale' : null;
-    if (filt === 'chrom') return ch ? 'chordt' : (sc ? 'scale' : 'plain');
-    return ch ? 'chordt' : (sc ? 'scale' : null);   // both
+    let kind;
+    if (filt === 'chord') kind = ch ? 'chordt' : null;
+    else if (filt === 'scale') kind = sc ? 'scale' : null;
+    else if (filt === 'chrom') kind = ch ? 'chordt' : (sc ? 'scale' : 'plain');
+    else kind = ch ? 'chordt' : (sc ? 'scale' : null);   // both
+    // the local center never disappears: a non-member center shows as a
+    // plain dotted mark so the ring always has something to sit on
+    if (!kind && pc === state.center) kind = 'plain';
+    return kind;
   };
   renderFretNeck('fretSvg', FBG, membership,
     // the label follows the mark's resolved kind, so a scale-only view
@@ -1345,6 +1731,53 @@ function renderFretboard(){
    Root render + keyboard + init
    ============================================================ */
 /* ============================================================
+   Rhythm — pattern cards + two-bar generator
+   ============================================================ */
+let rhythmType = null;   // 'sixteenths' | 'triplets' | 'mixed' | null
+
+function rhythmCells(p){
+  return [...p].map(s => `<div class="rcell ${s}">${s}</div>`).join('');
+}
+// cards are pure reference material — generation happens from the bar seg
+function buildRhythmCards(){
+  for (const [gridId, list] of [['rGrid16', RHYTHM.sixteenths], ['rGridT', RHYTHM.triplets]]){
+    const grid = $(gridId);
+    grid.innerHTML = '';
+    for (const p of list){
+      const d = h('div', { class:'rpatt' }, grid);
+      d.innerHTML = rhythmCells(p);
+    }
+  }
+}
+function randomPattern(){
+  const six = RHYTHM.sixteenths, tri = RHYTHM.triplets;
+  if (rhythmType === 'triplets') return tri[Math.floor(Math.random() * tri.length)];
+  if (rhythmType === 'sixteenths') return six[Math.floor(Math.random() * six.length)];
+  return Math.random() < 0.5
+    ? six[Math.floor(Math.random() * six.length)]
+    : tri[Math.floor(Math.random() * tri.length)];
+}
+function renderRhythmOut(){
+  const out = $('rhythmOut');
+  out.innerHTML = '';
+  for (let m = 0; m < 2; m++){
+    if (m) h('div', { class:'rbarline' }, out);
+    const meas = h('div', { class:'rmeasure' }, out);
+    const num = h('span', { class:'rmnum' }, meas);
+    num.textContent = m + 1;
+    for (let b = 0; b < 4; b++){
+      const beat = h('div', { class:'rbeat' }, meas);
+      beat.innerHTML = rhythmCells(randomPattern());
+    }
+  }
+}
+function syncRhythmBtns(){
+  const types = ['sixteenths', 'triplets', 'mixed'];
+  [...$('rhythmGenRow').children].forEach((b, i) =>
+    b.classList.toggle('on', i < 3 && types[i] === rhythmType));
+}
+
+/* ============================================================
    Header controls (docked at the bottom)
    ============================================================ */
 function buildControls(){
@@ -1364,10 +1797,10 @@ function buildControls(){
     b.textContent = label;
     b.addEventListener('click', () => selectKey(state.keyPc, m));
   }
-  for (let i = 0; i < 12; i++){
-    const b = h('button', { class:'chip', 'data-root':i }, $('rootRow'));
-    b.textContent = NOTES[i];
-    b.addEventListener('click', () => { state.root = i; renderAll(); });
+  for (const [v, label] of [[0,'ROOT'],[1,'1ST'],[2,'2ND']]){
+    const b = h('button', {}, $('tzInvRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => { state.tzInv = v; renderAll(); });
   }
   for (const [m, label] of [['names','NAMES'],['romans','ROMANS'],['functions','FUNCTIONS']]){
     const b = h('button', {}, $('cofModeRow'));
@@ -1394,6 +1827,18 @@ function buildControls(){
     b.textContent = label;
     b.addEventListener('click', () => setTheme(t));
   }
+  for (const [t, label] of [['sixteenths','16TH'],['triplets','TRIPLETS'],['mixed','MIXED']]){
+    const b = h('button', {}, $('rhythmGenRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => { rhythmType = t; renderRhythmOut(); syncRhythmBtns(); });
+  }
+  const rnew = h('button', {}, $('rhythmGenRow'));
+  rnew.textContent = '\u21bb NEW';
+  rnew.addEventListener('click', () => {
+    if (!rhythmType) rhythmType = 'mixed';
+    renderRhythmOut();
+    syncRhythmBtns();
+  });
   $('fretToggle').addEventListener('click', () => {
     state.fretOpen = !state.fretOpen;
     renderFretboard();
@@ -1408,8 +1853,8 @@ function renderHeader(){
     b.classList.toggle('on', i === state.keyPc));
   [...$('keyModeRow').children].forEach((b, i) =>
     b.classList.toggle('on', ['major','minor'][i] === state.keyMode));
-  [...$('rootRow').children].forEach((b, i) =>
-    b.classList.toggle('on', i === state.root));
+  [...$('tzInvRow').children].forEach((b, i) =>
+    b.classList.toggle('on', [0,1,2][i] === (state.tzInv || 0)));
   [...$('cofModeRow').children].forEach((b, i) =>
     b.classList.toggle('on', ['names','romans','functions'][i] === state.cofMode));
   [...$('fretFilterRow').children].forEach((b, i) =>
@@ -1442,6 +1887,7 @@ function renderAll(){
   renderFormula();
   renderKeyTables();
   renderCoF();
+  renderTonnetz();
   renderFretboard();
   refreshPcEls();
   save();
@@ -1473,12 +1919,15 @@ buildMovable();
 buildBasic();
 buildFormula();
 buildKeyTables();
+buildTonnetz();
+buildRhythmCards();
+syncRhythmBtns();
 document.body.classList.toggle('dark', state.theme === 'dark');
 renderAll();
 
 // Exposed for the test harness.
 window.__APP = { state, selectChord, selectKey, toggleCenter, setDisplay, setTheme, renderAll,
-  chordName, keyChords, fretLabelFor };
+  chordName, keyChords, fretLabelFor, tzClick };
 </script>
 </body>
 </html>

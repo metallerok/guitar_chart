@@ -4,12 +4,12 @@
 
 `index.html` — a single self-contained interactive rebuild of a printed guitar
 reference poster (moveable chords, basic chords, chord formulas, circle of
-fifths, key chord tables, fretboard with scale tabs). HTML + CSS + vanilla
-JS + SVG, **no build step, no dependencies**. All UI text and code comments
-are in English. Visual language: vintage printed chart — paper/ink color
-pair via CSS variables, thin rules, dense tables, dark header bars, no
-cards/gradients. **Dark theme is the default** (`body.dark`, warm
-near-black paper + cream ink); `state.theme` persists it, the THEME
+fifths, tonnetz lattice, key chord tables, rhythm practice, fretboard with
+scale tabs). HTML + CSS + vanilla JS + SVG, **no build step, no dependencies**.
+All UI text and code comments are in English. Visual language: vintage printed
+chart — paper/ink color pair via CSS variables, thin rules, dense tables, dark
+header bars, no cards/gradients. **Dark theme is the default** (`body.dark`,
+warm near-black paper + cream ink); `state.theme` persists it, the THEME
 seg (DARK | LIGHT) lives in the bottom dock. All colors must go through
 the variables in `:root` (light) / `body.dark` (dark) — incl. `--auxdim`,
 `--paperhi`, `--hov`, `--barhov`, `--shadow`; SVG text inherits
@@ -30,11 +30,17 @@ the root string) — do not hand-draw diagrams.
 - Two `<script>` blocks: `#music-model` (pure, testable) and the app
   (state + render). Model is exposed as `window.__MODEL`, app as `window.__APP`.
 - App state (persisted in `localStorage` key `guitar-poster-v1`):
-  `keyPc`, `keyMode`, `root` (moveable transposition), `display`
-  (`deg|note|int`, **degrees-first by design**), `sel {root,type}`,
-  `scale`, `center` (local center — **visual marker only**, ring + chip),
-  `cofMode`, `filter`, `fretView` (`scale|notes`), `fretOpen` (dock state),
-  `theme` (`dark|light`, **dark by default**).
+  `keyPc`, `keyMode`, `display` (`deg|note|int`, **degrees-first by design**),
+  `sel {root,type}` (the chord — **no separate root state**: `sel.root` drives
+  the moveable transposition AND the formula NOTES column), `tzInv` (tonnetz
+  inversion, display-only), `scale`, `center` (local center — **visual marker
+  only**, ring + chip), `cofMode`, `filter`, `fretView` (`scale|notes`),
+  `fretOpen` (dock state), `theme` (`dark|light`, **dark by default**).
+- **One source of truth for key**: `selectKey` (dock KEY chips, wheel outer/
+  middle rings, key-table row labels) resolves `sel` to the new key's tonic
+  triad — every view follows a key change. `selectChord` changes only the
+  chord. There is exactly one key control (dock KEY) and one root driver
+  (the selected chord).
 - `renderAll()` re-renders every section from state; hover never re-renders
   (cross-highlight is done by toggling `.xhl` on cached `[data-pc]` elements).
 - Bottom dock (`.dock-wrap`, `position:sticky; bottom:0`): the fretboard
@@ -50,9 +56,12 @@ the root string) — do not hand-draw diagrams.
   the key tonic (per-scale maps `SCALE_LABELS[scaleId]`, e.g. ♯4 in Lydian).
   The label follows the mark's resolved filter kind (in SCALE view a note
   that is also a chord tone still reads as a scale degree). The local center
-  never rewrites labels — marking only.
+  never rewrites labels — marking only — and it is visible in **every**
+  fretboard filter: a non-member center falls back to a `plain` mark so the
+  ring always has something to sit on.
 - Moveable diagrams: `SHAPES[t][col].f` = relative frets `[s6..s1]`, -1 =
   muted; `barre:[fromStr,toStr,rel]`. Base fret = `rootFret(pc, rootString)`.
+  The moveable table has **no root chips** — it transposes with `sel.root`.
 - Diagram grids are compact: the top line sits right above the highest played
   fret (`firstRow = min(used frets)`, capped at rel 0) and there are always
   **4 rows minimum** (5 only when the shape really spans 5 frets).
@@ -65,10 +74,28 @@ the root string) — do not hand-draw diagrams.
   its relative minor, inner = its vii° diminished (click selects the chord);
   hub = selected key. All three rings follow the label mode
   `names (C / Am / B°) | romans | functions` relative to the selected key.
-  **The wheel highlights one thing at a time**: a selected dim chord
-  suppresses the key-ring highlight, and `selectKey` clears a dim selection
-  (it becomes the tonic triad). Selected ring labels get their contrast via
-  inline `style.fill` (presentation attributes would lose to CSS rules).
+  **The wheel highlights one thing at a time**: a selected plain triad
+  (maj/min/dim — picked on the wheel, in the tonnetz or the key tables)
+  suppresses the key-ring highlight and lights up its own ring segment
+  (outer = maj, middle = min, inner = dim); extended chord types keep the
+  key highlight. `selectKey` always resolves the selection to the tonic
+  triad. Selected ring labels get their contrast via inline `style.fill`
+  (presentation attributes would lose to CSS rules).
+- Tonnetz (right column, **above KEY CHORDS**): hex patch (RADIUS 3, SP 92)
+  of degree nodes, `pc = (7i + 4j) % 12`; P5 edges solid, M3 long dash,
+  m3 dotted; axis arrows label the six directions. Sync: node labels follow
+  the global display mode (chord tones read against the chord root), chord
+  pcs fill as `tz-chord`, plain triads get the triangle/line overlay with
+  voice badges + bass ring (inversion = `state.tzInv`, local seg in the bar),
+  the center shows as the dashed `tz-cring`. Vertex click = `toggleCenter`,
+  triangle-interior click = `selectChord` (exposed as `__APP.tzClick(x,y)`
+  in lattice coords). Hover = ghost major triangle + interval names on
+  adjacent edges. Nodes carry absolute `data-pc` → cross-highlight.
+- Rhythm (right column, after KEY CHORDS, same panel width): 16 sixteenth +
+  8 triplet pattern cards are **pure reference** (no click generation);
+  the only generator is the bar seg `16TH | TRIPLETS | MIXED | ↻ NEW`
+  which deals two random 4-beat bars into `#rhythmOut`. Patterns live in
+  the model (`RHYTHM`, `o` = play, `x` = rest).
 - Chord shape note math: `pc = (TUNING[i] + base + rel) % 12`,
   `base = (rootPc - TUNING[6-rootStr]) mod 12`.
 - Horizontal necks (fretboard, notes view) draw **string 1 on top**, string 6
@@ -93,7 +120,7 @@ the root string) — do not hand-draw diagrams.
    tests/run_tests.sh
    ```
 
-   - `tests/inject_tests.py` generates `tmp/index-test.html` (69 assertions,
+   - `tests/inject_tests.py` generates `tmp/index-test.html` (94 assertions,
      PASS/FAIL panel top-left; the test script **resets persisted state**
      before asserting) and `tmp/index-scenario.html` (C major → V → G7 →
      local center on ♭7) from `index.html` into `tmp/` (gitignored).
