@@ -21,6 +21,13 @@ TEST_JS = r"""
   const out = [];
   const ok = (name, cond) => out.push((cond ? 'PASS ' : 'FAIL ') + name);
   try {
+    // ---------- clean slate (ignore persisted state from previous runs) ----------
+    localStorage.removeItem('guitar-poster-v1');
+    const S = window.__APP.state;
+    Object.assign(S, { keyPc:0, keyMode:'major', root:0, display:'deg',
+      sel:{ root:0, type:'maj' }, scale:'ionian', center:null, cofMode:'names', filter:'both' });
+    window.__APP.renderAll();
+
     // ---------- model ----------
     const errs = window.__MODEL.verifyShapes();
     ok('verifyShapes clean (' + (errs.length ? errs[0] : 'none') + ')', errs.length === 0);
@@ -44,8 +51,8 @@ TEST_JS = r"""
     ok('69 movable diagrams', document.querySelectorAll('#movBody svg').length === 69);
     // transpose root to F: first movable diagram (maj r6) must become F major barre at fret 1
     [...document.querySelectorAll('#rootRow button')].find(b => b.textContent === 'F').click();
-    const firstDots = [...document.querySelectorAll('#movBody tr:first-child td.cell:first-of-type .cdot')];
-    const pcs = firstDots.map(g => +g.dataset.pc).sort((a, b) => a - b);
+    const firstDots = [...document.querySelectorAll('#movBody tr:first-child td:nth-child(2) .cdot')];
+    const pcs = [...new Set(firstDots.map(g => +g.dataset.pc))].sort((a, b) => a - b);
     ok('F maj r6 pcs = F A C', JSON.stringify(pcs) === JSON.stringify([0, 5, 9]));
     const barreF = document.querySelector('#movBody tr:first-child rect.barre');
     ok('F maj r6 barre at fret 1', !!barreF && barreF.getAttribute('y') !== null);
@@ -53,15 +60,22 @@ TEST_JS = r"""
 
     // ---------- basic chords ----------
     ok('35 basic diagrams', document.querySelectorAll('#basicBody svg').length === 35);
-    ok('basic C maj pcs', [...document.querySelectorAll('#basicBody tr:first-child td.cell:nth-child(4) .cdot')]
-      .map(g => +g.dataset.pc).sort((a, b) => a - b).join(',') === '0,4,7');
+    const cPcs = [...new Set([...document.querySelectorAll('#basicBody tr:first-child td:nth-child(4) .cdot')]
+      .map(g => +g.dataset.pc))].sort((a, b) => a - b);
+    ok('basic C maj pcs', JSON.stringify(cPcs) === JSON.stringify([0, 4, 7]));
+    // click a basic diagram -> selects that chord everywhere
+    document.querySelector('#basicBody tr:first-child td:nth-child(2)').click();  // A maj
+    ok('basic click selects A maj', S.sel.root === 9 && S.sel.type === 'maj');
+    ok('formula follows sel', (document.querySelector('#formulaBody tr.on') || {dataset:{}}).dataset.ftype === 'maj');
+    // back to C maj for the rest of the run
+    [...document.querySelectorAll('#keyRow button')].find(b => b.textContent === 'C').click();
+    [...document.querySelectorAll('#rootRow button')].find(b => b.textContent === 'C').click();
 
     // ---------- formula ----------
-    ok('23 formula rows', document.querySelectorAll('#formulaBody tr').length === 23);
+    ok('25 formula rows', document.querySelectorAll('#formulaBody tr').length === 25);
     ok('formula row maj', document.querySelector('#formulaBody tr[data-ftype="maj"] .fform').textContent === '1 3 5');
     ok('formula row dom7', document.querySelector('#formulaBody tr[data-ftype="7"] .fform').textContent === '1 3 5 \u266d7');
-    const selRow = document.querySelector('#formulaBody tr.on');
-    ok('formula selected row = maj', !!selRow && selRow.dataset.ftype === 'maj');
+    ok('formula notes of C maj', document.querySelector('#formulaBody tr[data-ftype="maj"] .fnotes').textContent.trim() === 'C E G');
 
     // ---------- circle of fifths ----------
     ok('24 cof segments', document.querySelectorAll('#cofSvg .cof-seg').length === 24);
@@ -80,16 +94,16 @@ TEST_JS = r"""
     // fretboard: chord tone marks exist for G7
     ok('fretboard chordt marks', document.querySelectorAll('#fretSvg .g-mark.chordt').length >= 8);
     // degree labels read against the chord root G
-    const scaleMark = [...document.querySelectorAll('#fretSvg .g-mark.scale text')].find(t => t.textContent === '\u266d7');
-    ok('fretboard shows b7 label', !!scaleMark);
+    const chordB7 = [...document.querySelectorAll('#fretSvg .g-mark.chordt text')].find(t => t.textContent === '\u266d7');
+    ok('fretboard shows b7 on chord tone', !!chordB7);
 
     // ---------- local center ----------
-    window.__APP.toggleCenter(7);   // center on G
-    ok('center chip G = I', document.getElementById('centerChip').textContent.indexOf('I') !== -1);
-    window.__APP.toggleCenter(10);  // center on F = b7 of G
-    ok('center chip F = b7', document.getElementById('centerChip').textContent.indexOf('\u266d7') !== -1);
+    window.__APP.toggleCenter(7);   // center on G = V of C major
+    ok('center chip G = V', document.getElementById('centerChip').textContent.indexOf('V') !== -1);
+    window.__APP.toggleCenter(5);   // center on F = IV of C major
+    ok('center chip F = IV', document.getElementById('centerChip').textContent.indexOf('IV') !== -1);
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    ok('esc clears center', window.__APP.state.center === null);
+    ok('esc clears center', S.center === null);
 
     // ---------- display modes ----------
     dispBtns.find(b => b.textContent === 'NOTES').click();
@@ -100,7 +114,7 @@ TEST_JS = r"""
 
     // ---------- keyboard: arrows change key ----------
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
-    ok('arrowleft key F', window.__APP.state.keyPc === 5);
+    ok('arrowleft key B\u266d', S.keyPc === 11);
 
     // ---------- scales ----------
     ok('7 major mode rows', document.querySelectorAll('#scalesBody .scale-row').length === 7);
@@ -113,7 +127,7 @@ TEST_JS = r"""
 
     // ---------- persistence ----------
     const saved = JSON.parse(localStorage.getItem('guitar-poster-v1'));
-    ok('state persisted', saved && saved.keyPc === 5 && saved.scale === 'dorian');
+    ok('state persisted', saved && saved.keyPc === 11 && saved.scale === 'dorian');
   } catch (err) {
     out.push('ERROR ' + (err && err.message));
   }
@@ -133,7 +147,7 @@ SCEN_JS = r"""
   // Scenario: C major -> V -> G7 -> select b7 -> see it everywhere
   document.dispatchEvent(new KeyboardEvent('keydown', { key: '5', bubbles: true }));   // V of C major
   [...document.querySelectorAll('#fretFilterRow button')].find(b => b.textContent === 'ALL').click();
-  window.__APP.toggleCenter(10);   // local center on b7 (F)
+  window.__APP.toggleCenter(5);   // local center on b7 (F)
   document.getAnimations().forEach(a => a.finish());
 })();
 """

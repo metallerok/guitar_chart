@@ -58,9 +58,10 @@ the root string) — do not hand-draw diagrams.
    tests/run_tests.sh
    ```
 
-   - `tests/inject_tests.py` generates `tmp/index-test.html` (assertions,
-     PASS/FAIL panel top-left) and `tmp/index-scenario.html` (a musical
-     scenario) from `index.html` into `tmp/` (gitignored).
+   - `tests/inject_tests.py` generates `tmp/index-test.html` (43 assertions,
+     PASS/FAIL panel top-left; the test script **resets persisted state**
+     before asserting) and `tmp/index-scenario.html` (C major → V → G7 →
+     local center on ♭7) from `index.html` into `tmp/` (gitignored).
    - Then headless Firefox captures `tmp/gp-test.png`, `tmp/gp-scenario.png`,
      `tmp/gp-default.png`.
    - **Read `tmp/gp-test.png` and check every line is PASS.**

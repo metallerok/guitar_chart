@@ -778,7 +778,7 @@ function chordDiagram(typeId, frets, barre, base, opts){
   }
   // barre
   if (barre){
-    const [from, to, rel] = barre;
+    const from = barre[0], to = barre[1], rel = barre[2] || 0;
     const i0 = 6 - from, i1 = 6 - to;
     const y = DG.top + rel * DG.rowH + DG.rowH / 2;
     const barreAttrs = { x:DG.strX0 + i0 * DG.strGap - 6.5, y:y - 6.5,
@@ -827,8 +827,9 @@ function chordDiagram(typeId, frets, barre, base, opts){
 function movableDiagram(typeId, col, rootPc){
   const sh = SHAPES[typeId][col];
   const base = rootFret(rootPc, +col[1]);
-  return chordDiagram(typeId, sh.f, sh.barre, base,
-    { rootPc, typeId, ref:rootPc, onClick:pc => {} });
+  // dots carry no own click handler -> the click bubbles to the cell,
+  // which selects the chord
+  return chordDiagram(typeId, sh.f, sh.barre, base, { rootPc, typeId, ref:rootPc });
 }
 
 /* ============================================================
@@ -884,7 +885,8 @@ function buildBasic(){
     const lbl = h('td', { class:'rowlbl' }, tr);
     lbl.textContent = BASIC_LABELS[t];
     for (const letter of Object.keys(BASIC_ROOTS)){
-      h('td', { class:'cell', 'data-letter':letter, 'data-type':t }, tr);
+      const td = h('td', { class:'cell', 'data-letter':letter, 'data-type':t }, tr);
+      td.addEventListener('click', () => selectChord(BASIC_ROOTS[letter], t));
     }
   }
 }
@@ -899,9 +901,8 @@ function renderBasic(){
       const letter = letters[c - 1];
       const td = tr.children[c];
       const rootPc = BASIC_ROOTS[letter];
-      const bn = basicNotes(letter, t);
       td.innerHTML = '';
-      td.appendChild(chordDiagram(t, bn.notes.length ? BASIC[letter][t].f : [], BASIC[letter][t].barre, 0,
+      td.appendChild(chordDiagram(t, BASIC[letter][t].f, BASIC[letter][t].barre, 0,
         { rootPc, typeId:t, ref:rootPc,
           onClick:() => selectChord(rootPc, t) }));
       td.classList.toggle('on', !!(state.sel && state.sel.type === t && state.sel.root === rootPc));
