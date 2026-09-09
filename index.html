@@ -8,6 +8,7 @@
 /* ============================================================
    Theme: vintage printed guitar reference chart.
    Off-white paper, thin black rules, dense tables, no cards.
+   Dark variant: warm near-black paper, cream ink (default).
    ============================================================ */
 :root{
   --paper:#f4f1e8;
@@ -18,6 +19,26 @@
   --wash:#e6e0d0;
   --selbg:#191712;
   --selfg:#f4f1e8;
+  --auxdim:#cfc9b8;   /* muted text on the dark header bars */
+  --paperhi:#fffef7;  /* highlighted cell / row background */
+  --hov:#dcd5c2;      /* hover tint on paper surfaces */
+  --barhov:#3a362c;   /* hover tint on dark header bars */
+  --shadow:rgba(25,23,18,.18);
+}
+body.dark{
+  --paper:#26231c;
+  --paper2:#2e2a22;
+  --ink:#d6cfbc;
+  --line:#635d4e;
+  --mid:#938b77;
+  --wash:#37332a;
+  --selbg:#d6cfbc;
+  --selfg:#26231c;
+  --auxdim:#8a826e;
+  --paperhi:#353127;
+  --hov:#3f3a30;
+  --barhov:#c2bba8;
+  --shadow:rgba(0,0,0,.55);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -31,7 +52,7 @@ body{
 [hidden]{display:none!important}
 button{font-family:inherit;color:inherit}
 h1,h2,p,ul{margin:0}
-svg text{user-select:none}
+svg text{user-select:none;fill:var(--ink)}
 
 /* ---------- top header ---------- */
 header.top{
@@ -75,9 +96,9 @@ main.poster{
   padding:3px 8px;font-size:10.5px;font-weight:700;letter-spacing:.16em;
 }
 .bar .seg button{border-color:var(--paper);color:var(--paper)}
-.bar .seg button:hover{background:#3a362c}
+.bar .seg button:hover{background:var(--barhov)}
 .bar .seg button.on{background:var(--paper);color:var(--selbg)}
-.bar .bar-aux{font-size:10px;letter-spacing:.06em;font-weight:600;color:#cfc9b8}
+.bar .bar-aux{font-size:10px;letter-spacing:.06em;font-weight:600;color:var(--auxdim)}
 .bar .bar-mono{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em}
 .hint{font-size:10.5px;color:var(--mid);line-height:1.45;padding:6px 8px;border-top:1px solid var(--line)}
 
@@ -94,7 +115,7 @@ table.mov td.rowlbl:hover{background:var(--wash)}
 table.mov td.rowlbl.on{background:var(--selbg);color:var(--selfg)}
 table.mov thead th{font-size:10px;letter-spacing:.1em;background:var(--paper2)}
 table.mov td.cell{padding:3px}
-table.mov td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background:#fffef7}
+table.mov td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background:var(--paperhi)}
 .mov svg{display:block;width:100%;height:auto}
 .root-chips{padding:6px 8px;border-bottom:1px solid var(--line)}
 
@@ -102,7 +123,7 @@ table.mov td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background
 table.bas td{padding:3px 2px}
 table.bas td.rowlbl{font-size:11.5px;font-weight:700;background:var(--paper2);width:46px}
 table.bas thead th{font-size:12px;font-weight:800;background:var(--paper2)}
-table.bas td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background:#fffef7}
+table.bas td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background:var(--paperhi)}
 .bas svg{display:block;width:100%;height:auto}
 
 /* ---------- chord formula ---------- */
@@ -110,7 +131,7 @@ table.frm td,table.frm th{font-size:11.5px;padding:2px 6px;text-align:left}
 table.frm th{font-size:9.5px;letter-spacing:.12em;background:var(--paper2)}
 table.frm td.grp{font-size:9px;letter-spacing:.1em;color:var(--mid);font-weight:700;width:64px}
 table.frm tr.on td{background:var(--selbg);color:var(--selfg)}
-table.frm tr.on td.grp{color:#cfc9b8}
+table.frm tr.on td.grp{color:var(--auxdim)}
 table.frm td.fname{font-weight:700;cursor:pointer;width:88px}
 table.frm td.fform{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.05em}
 table.frm td.fnotes{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--mid);cursor:pointer}
@@ -121,7 +142,7 @@ table.frm tr.on:hover td{background:var(--selbg)}
 #cofSvg{display:block;width:100%;max-width:420px;height:auto;margin:0 auto}
 #cofSvg .seg-outline{fill:none;stroke:var(--ink);stroke-width:1.2}
 #cofSvg .cof-seg{fill:var(--paper);stroke:var(--ink);stroke-width:1.2;cursor:pointer}
-#cofSvg .cof-seg:hover{fill:#dcd5c2}
+#cofSvg .cof-seg:hover{fill:var(--hov)}
 #cofSvg .cof-seg.min{fill:var(--paper2)}
 #cofSvg .cof-seg.dimg{fill:var(--wash)}
 #cofSvg .cof-seg.on{fill:var(--selbg)}
@@ -129,7 +150,6 @@ table.frm tr.on:hover td{background:var(--selbg)}
 #cofSvg .cof-name.min-name{font-size:11px;font-weight:700}
 #cofSvg .cof-roman{font-size:9px;font-weight:600;pointer-events:none}
 #cofSvg .cof-sig{font-size:8.5px;pointer-events:none}
-#cofSvg .cof-seg.on text{fill:var(--selfg)}
 #cofSvg .cof-dim2{font-size:9px;font-weight:700;fill:var(--ink);pointer-events:none}
 #cofSvg .cof-center-big{font-size:21px;font-weight:800}
 #cofSvg .cof-center-sub{font-size:8.5px;font-weight:600;fill:var(--mid)}
@@ -148,7 +168,7 @@ table.keys td.kc{cursor:pointer;font-weight:600;line-height:1.15}
 table.keys td.kc small{display:block;font-size:8.5px;font-weight:600;color:var(--mid)}
 table.keys td.kc:hover{background:var(--wash)}
 table.keys td.kc.on{background:var(--selbg);color:var(--selfg)}
-table.keys td.kc.on small{color:#cfc9b8}
+table.keys td.kc.on small{color:var(--auxdim)}
 
 /* ---------- fretboard ---------- */
 .fretbox{padding:8px 8px 2px}
@@ -175,10 +195,9 @@ table.keys td.kc.on small{color:#cfc9b8}
   padding:5px 8px;border-bottom:1px solid var(--line);
 }
 .scale-tabs button{
-  border:1px solid var(--ink);border-right-width:0;background:transparent;
+  border:1px solid var(--ink);margin-right:-1px;background:transparent;
   padding:2.5px 8px;font-size:9.5px;font-weight:700;letter-spacing:.07em;cursor:pointer;
 }
-.scale-tabs button:last-child{border-right-width:1px}
 .scale-tabs button:hover{background:var(--wash)}
 .scale-tabs button.on{background:var(--selbg);color:var(--selfg)}
 .scale-tabs button[data-scale="harmminor"]{margin-left:12px}
@@ -187,8 +206,8 @@ table.keys td.kc.on small{color:#cfc9b8}
 [data-pc].xhl{box-shadow:inset 0 0 0 2px var(--ink)}
 g[data-pc].xhl circle.dot{stroke-width:2.8}
 g[data-pc].xhl rect,g[data-pc].xhl path{stroke-width:2.4}
-text[data-pc].xhl{fill:#fff;background:var(--ink)}
-td[data-pc].xhl,button[data-pc].xhl{background:#fffef7}
+text[data-pc].xhl{fill:var(--selfg);background:var(--ink)}
+td[data-pc].xhl,button[data-pc].xhl{background:var(--paperhi)}
 /* note pills (formula NOTES column): a clean pill instead of a crooked box */
 span[data-pc]{display:inline-block;padding:0 3px;margin-right:2px;border-radius:2px}
 span[data-pc].xhl{background:var(--ink);color:var(--selfg);box-shadow:none}
@@ -196,9 +215,9 @@ span[data-pc].xhl{background:var(--ink);color:var(--selfg);box-shadow:none}
 /* ---------- tooltip ---------- */
 #tip{
   position:fixed;z-index:50;pointer-events:none;
-  background:#fffdf4;border:1px solid var(--ink);
+  background:var(--paper2);border:1px solid var(--ink);
   padding:5px 9px;font-size:11px;line-height:1.5;color:var(--ink);
-  box-shadow:3px 3px 0 rgba(25,23,18,.18);
+  box-shadow:3px 3px 0 var(--shadow);
 }
 #tip .t-big{font-size:14px;font-weight:800}
 #tip .t-mid{color:var(--mid)}
@@ -218,7 +237,7 @@ span[data-pc].xhl{background:var(--ink);color:var(--selfg);box-shadow:none}
   border:1px solid var(--paper);background:transparent;color:var(--paper);
   font-size:10px;line-height:1;padding:2px 8px;cursor:pointer;
 }
-.bar .bar-toggle:hover{background:#3a362c}
+.bar .bar-toggle:hover{background:var(--barhov)}
 #fretSec.closed .scale-tabs,#fretSec.closed .fretbox,#fretSec.closed .hint{display:none}
 
 /* ---------- footer credit ---------- */
@@ -342,6 +361,11 @@ footer.info{
         <button class="chip" id="clearCenter">clear</button>
       </div>
       <span class="sub">click any note on a neck to mark it · Esc clears</span>
+    </div>
+    <div class="ctrl-block">
+      <span class="lbl">THEME</span>
+      <div class="seg" id="themeRow"></div>
+      <span class="sub">ink &amp; paper</span>
     </div>
   </div>
 </div>
@@ -660,7 +684,8 @@ function defaultState(){
     cofMode: 'names',    // 'names' | 'romans' | 'functions'
     filter: 'both',      // fretboard filter: 'chord' | 'scale' | 'both' | 'chrom'
     fretView: 'scale',   // fretboard tab: 'scale' | 'notes'
-    fretOpen: true       // docked fretboard expanded?
+    fretOpen: true,      // docked fretboard expanded?
+    theme: 'dark'        // 'dark' | 'light' (ink & paper)
   };
 }
 function loadState(){
@@ -764,6 +789,11 @@ function selectKey(pc, mode){
       state.scale = mode === 'minor' ? 'aeolian' : 'ionian';
     }
   }
+  // the wheel highlights one thing at a time: picking a key clears a
+  // wheel-selected diminished chord (it becomes the tonic triad)
+  if (state.sel && state.sel.type === 'dim'){
+    state.sel = { root: pc, type: state.keyMode === 'minor' ? 'min' : 'maj' };
+  }
   renderAll();
 }
 function toggleCenter(pc){
@@ -771,6 +801,12 @@ function toggleCenter(pc){
   renderAll();
 }
 function setDisplay(mode){ state.display = mode; renderAll(); }
+function setTheme(t){
+  state.theme = t;
+  document.body.classList.toggle('dark', t === 'dark');
+  renderHeader();
+  save();
+}
 
 /* ============================================================
    Chord diagram (SVG)
@@ -840,7 +876,9 @@ function chordDiagram(typeId, frets, barre, base, opts){
         : chordDegLabel(o.typeId, semi))
       : DEG_NAMES[semi];
     const t = el('text', { x:x, y:y + 2.8, 'text-anchor':'middle', 'font-size':'7.6px',
-      'font-weight':700, fill:isRoot ? 'var(--selfg)' : 'var(--ink)' }, g);
+      'font-weight':700 }, g);
+    // inline style: a CSS rule (svg text) would beat a fill attribute here
+    t.style.fill = isRoot ? 'var(--selfg)' : 'var(--ink)';
     t.textContent = label;
     // hover info: string · fret · note · degree · interval
     g.dataset.pc = pc;
@@ -1076,8 +1114,11 @@ function renderCoF(){
     const a0 = c - 15 + GAP, a1 = c + 15 - GAP;
     const minPc = (seg.pc + 9) % 12;     // relative minor of the major above
     const dimPc = (seg.pc + 11) % 12;    // vii° of the major above
-    const majSel = state.keyPc === seg.pc && state.keyMode === 'major';
-    const minSel = state.keyPc === minPc && state.keyMode === 'minor';
+    // the wheel highlights one thing at a time: a selected diminished
+    // chord suppresses the key highlight (and vice versa via selectKey)
+    const keyHl = !(state.sel && state.sel.type === 'dim');
+    const majSel = keyHl && state.keyPc === seg.pc && state.keyMode === 'major';
+    const minSel = keyHl && state.keyPc === minPc && state.keyMode === 'minor';
     const dimSel = !!(state.sel && state.sel.type === 'dim' && state.sel.root === dimPc);
 
     // outer ring: major chords
@@ -1120,12 +1161,12 @@ function renderCoF(){
       mid = cofFn(minPc);               inn = cofFn(dimPc);
     }
     const mt = cofText(svg, 151, c, big, 'cof-name', majSel ? 15 : 17);
-    if (majSel) mt.setAttribute('fill', 'var(--selfg)');
+    if (majSel) mt.style.fill = 'var(--selfg)';
     cofText(svg, 135, c, sub, 'cof-sig', 8.5);
     const mn = cofText(svg, 97, c, mid, 'cof-name min-name', minSel ? 10 : 11);
-    if (minSel) mn.setAttribute('fill', 'var(--selfg)');
+    if (minSel) mn.style.fill = 'var(--selfg)';
     const dn = cofText(svg, 55, c, inn, 'cof-dim2', dimSel ? 10 : 9.5);
-    if (dimSel) dn.setAttribute('fill', 'var(--selfg)');
+    if (dimSel) dn.style.fill = 'var(--selfg)';
   }
   // center hub: the selected key
   const seg0 = CIRCLE.find(s => s.pc === state.keyPc) || CIRCLE[0];
@@ -1348,6 +1389,11 @@ function buildControls(){
     b.textContent = label;
     b.addEventListener('click', () => { state.fretView = v; renderAll(); });
   }
+  for (const [t, label] of [['dark','DARK'],['light','LIGHT']]){
+    const b = h('button', {}, $('themeRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => setTheme(t));
+  }
   $('fretToggle').addEventListener('click', () => {
     state.fretOpen = !state.fretOpen;
     renderFretboard();
@@ -1371,6 +1417,8 @@ function renderHeader(){
   // view tab on the fretboard bar
   [...$('fretViewRow').children].forEach((b, i) =>
     b.classList.toggle('on', ['scale','notes'][i] === state.fretView));
+  [...$('themeRow').children].forEach((b, i) =>
+    b.classList.toggle('on', ['dark','light'][i] === state.theme));
   const chip = $('centerChip');
   if (state.center == null){
     chip.textContent = '—';
@@ -1425,10 +1473,11 @@ buildMovable();
 buildBasic();
 buildFormula();
 buildKeyTables();
+document.body.classList.toggle('dark', state.theme === 'dark');
 renderAll();
 
 // Exposed for the test harness.
-window.__APP = { state, selectChord, selectKey, toggleCenter, setDisplay, renderAll,
+window.__APP = { state, selectChord, selectKey, toggleCenter, setDisplay, setTheme, renderAll,
   chordName, keyChords, fretLabelFor };
 </script>
 </body>

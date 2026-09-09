@@ -6,9 +6,14 @@
 reference poster (moveable chords, basic chords, chord formulas, circle of
 fifths, key chord tables, fretboard with scale tabs). HTML + CSS + vanilla
 JS + SVG, **no build step, no dependencies**. All UI text and code comments
-are in English. Visual language: vintage printed chart — off-white paper
-(`--paper`), thin black rules, dense tables, black header bars, no
-cards/gradients.
+are in English. Visual language: vintage printed chart — paper/ink color
+pair via CSS variables, thin rules, dense tables, dark header bars, no
+cards/gradients. **Dark theme is the default** (`body.dark`, warm
+near-black paper + cream ink); `state.theme` persists it, the THEME
+seg (DARK | LIGHT) lives in the bottom dock. All colors must go through
+the variables in `:root` (light) / `body.dark` (dark) — incl. `--auxdim`,
+`--paperhi`, `--hov`, `--barhov`, `--shadow`; SVG text inherits
+`svg text{fill:var(--ink)}`.
 
 ## Core principle
 
@@ -28,15 +33,18 @@ the root string) — do not hand-draw diagrams.
   `keyPc`, `keyMode`, `root` (moveable transposition), `display`
   (`deg|note|int`, **degrees-first by design**), `sel {root,type}`,
   `scale`, `center` (local center — **visual marker only**, ring + chip),
-  `cofMode`, `filter`, `fretView` (`scale|notes`), `fretOpen` (dock state).
+  `cofMode`, `filter`, `fretView` (`scale|notes`), `fretOpen` (dock state),
+  `theme` (`dark|light`, **dark by default**).
 - `renderAll()` re-renders every section from state; hover never re-renders
   (cross-highlight is done by toggling `.xhl` on cached `[data-pc]` elements).
 - Bottom dock (`.dock-wrap`, `position:sticky; bottom:0`): the fretboard
   panel (collapsible via `#fretToggle`, persisted as `fretOpen`) plus the
-  global controls (SHOW / KEY / LOCAL CENTER) — always visible while
+  global controls (SHOW / KEY / LOCAL CENTER / THEME) — always visible while
   scrolling. The fretboard bar has a view tab `SCALE | NOTES` (NOTES = the
   old all-notes neck, lives in the same `#fretSvg`); scale tabs + formula +
-  filter are hidden in NOTES view.
+  filter are hidden in NOTES view. Scale tabs all keep their right border
+  (`margin-right:-1px` collapse) so the border shows before the extra-group
+  gap after LOCRAN.
 - Degrees display rules: chord tones read against the chord root (with
   per-chord overrides for ♯5/♭5/♭♭7 via `CHORDS[t].ovr`), scale tones against
   the key tonic (per-scale maps `SCALE_LABELS[scaleId]`, e.g. ♯4 in Lydian).
@@ -57,6 +65,10 @@ the root string) — do not hand-draw diagrams.
   its relative minor, inner = its vii° diminished (click selects the chord);
   hub = selected key. All three rings follow the label mode
   `names (C / Am / B°) | romans | functions` relative to the selected key.
+  **The wheel highlights one thing at a time**: a selected dim chord
+  suppresses the key-ring highlight, and `selectKey` clears a dim selection
+  (it becomes the tonic triad). Selected ring labels get their contrast via
+  inline `style.fill` (presentation attributes would lose to CSS rules).
 - Chord shape note math: `pc = (TUNING[i] + base + rel) % 12`,
   `base = (rootPc - TUNING[6-rootStr]) mod 12`.
 - Horizontal necks (fretboard, notes view) draw **string 1 on top**, string 6
@@ -81,7 +93,7 @@ the root string) — do not hand-draw diagrams.
    tests/run_tests.sh
    ```
 
-   - `tests/inject_tests.py` generates `tmp/index-test.html` (57 assertions,
+   - `tests/inject_tests.py` generates `tmp/index-test.html` (69 assertions,
      PASS/FAIL panel top-left; the test script **resets persisted state**
      before asserting) and `tmp/index-scenario.html` (C major → V → G7 →
      local center on ♭7) from `index.html` into `tmp/` (gitignored).

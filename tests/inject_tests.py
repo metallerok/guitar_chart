@@ -26,6 +26,7 @@ TEST_JS = r"""
     const S = window.__APP.state;
     Object.assign(S, { keyPc:0, keyMode:'major', root:0, display:'deg',
       sel:{ root:0, type:'maj' }, scale:'ionian', center:null, cofMode:'names', filter:'both' });
+    window.__APP.setTheme('dark');
     window.__APP.renderAll();
 
     // ---------- model ----------
@@ -57,6 +58,11 @@ TEST_JS = r"""
     const barreF = document.querySelector('#movBody tr:first-child rect.barre');
     ok('F maj r6 barre at fret 1', !!barreF && barreF.getAttribute('y') !== null);
     ok('movRootLabel F', document.getElementById('movRootLabel').textContent.indexOf('F') !== -1);
+    // root digit must contrast with its dot (inline style beats the svg text CSS rule)
+    const rootDot = document.querySelector('#movBody .cdot[data-pc="5"]');
+    ok('root digit contrasts with dot',
+      getComputedStyle(rootDot.querySelector('text')).fill !==
+      getComputedStyle(rootDot.querySelector('circle')).fill);
 
     // ---------- compact diagrams ----------
     const svgH = s => [...document.querySelectorAll(s)].map(x => x.viewBox.baseVal.height);
@@ -103,6 +109,25 @@ TEST_JS = r"""
     const dimSeg = [...document.querySelectorAll('#cofSvg .cof-seg.dimg')].find(p => p.dataset.pc === '11');
     dimSeg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     ok('dim ring selects B\u00b0', S.sel.root === 11 && S.sel.type === 'dim');
+    // wheel shows one selection: dim suppresses the key rings ...
+    ok('dim sel suppresses key rings',
+      !document.querySelector('#cofSvg .cof-seg.on:not(.dimg)') &&
+      !!document.querySelector('#cofSvg .cof-seg.dimg.on'));
+    // ... and the dim label stays readable on the dark wedge
+    // (inline style.fill must beat the .cof-dim2 CSS rule)
+    const dimLbls = [...document.querySelectorAll('#cofSvg .cof-dim2')];
+    const selLbl = dimLbls.find(t => t.style.fill.indexOf('selfg') !== -1);
+    ok('selected dim label has inline fill', !!selLbl);
+    ok('selected dim label readable',
+      !!selLbl && getComputedStyle(selLbl).fill !==
+      getComputedStyle(dimLbls.find(t => t !== selLbl)).fill);
+    // picking a key clears the dim selection (becomes the tonic triad)
+    const cMaj = [...document.querySelectorAll('#cofSvg .cof-seg')]
+      .find(p => p.dataset.pc === '0' && !p.classList.contains('min') && !p.classList.contains('dimg'));
+    cMaj.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    ok('major sel clears dim', S.sel.root === 0 && S.sel.type === 'maj' &&
+      !document.querySelector('#cofSvg .cof-seg.dimg.on'));
+    ok('major ring highlighted', !!document.querySelector('#cofSvg .cof-seg.on:not(.dimg)'));
 
     // ---------- key chord tables sync (C major, press V) ----------
     [...document.querySelectorAll('#keyRow button')].find(b => b.textContent === 'C').click();
@@ -140,7 +165,7 @@ TEST_JS = r"""
     dispBtns.find(b => b.textContent === 'DEGREES').click();
 
     // ---------- sticky dock: fretboard + controls ----------
-    ok('3 control groups docked', document.querySelectorAll('.dock-controls .ctrl-block').length === 3);
+    ok('4 control groups docked', document.querySelectorAll('.dock-controls .ctrl-block').length === 4);
     document.getElementById('fretToggle').click();
     ok('fretboard collapses', document.getElementById('fretSec').classList.contains('closed') && S.fretOpen === false);
     document.getElementById('fretToggle').click();
@@ -152,6 +177,21 @@ TEST_JS = r"""
     ok('notes view hides scale tabs', document.getElementById('scaleTabs').hidden === true);
     [...document.querySelectorAll('#fretViewRow button')].find(b => b.textContent === 'SCALE').click();
     ok('back to scale view', S.fretView === 'scale' && document.getElementById('scaleTabs').hidden === false);
+    // every scale tab keeps its right border (before the extra-group gap too)
+    const tabBtns = [...document.querySelectorAll('#scaleTabs button')];
+    ok('right border on every scale tab (LOCRAN too)',
+      tabBtns.every(b => parseFloat(getComputedStyle(b).borderRightWidth) === 1));
+
+    // ---------- theme (dark by default) ----------
+    ok('theme seg buttons', JSON.stringify([...document.querySelectorAll('#themeRow button')].map(b => b.textContent)) === JSON.stringify(['DARK','LIGHT']));
+    ok('dark theme on after reset', document.body.classList.contains('dark') && S.theme === 'dark');
+    ok('dark palette active', getComputedStyle(document.body).getPropertyValue('--selbg').trim() === '#d6cfbc');
+    [...document.querySelectorAll('#themeRow button')].find(b => b.textContent === 'LIGHT').click();
+    ok('light theme toggle', !document.body.classList.contains('dark') && S.theme === 'light');
+    ok('light palette active', getComputedStyle(document.body).getPropertyValue('--selbg').trim() === '#191712');
+    ok('light theme persisted', JSON.parse(localStorage.getItem('guitar-poster-v1')).theme === 'light');
+    [...document.querySelectorAll('#themeRow button')].find(b => b.textContent === 'DARK').click();
+    ok('back to dark', document.body.classList.contains('dark') && S.theme === 'dark');
 
     // ---------- keyboard: arrows change key ----------
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
