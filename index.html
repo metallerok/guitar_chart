@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guitar Chart — Interactive Harmony Poster</title>
+<style>
+/* ============================================================
+   Theme: vintage printed guitar reference chart.
+   Off-white paper, thin black rules, dense tables, no cards.
+   ============================================================ */
+:root{
+  --paper:#f4f1e8;
+  --paper2:#efeade;
+  --ink:#191712;
+  --line:#3a362c;
+  --mid:#7a7365;
+  --wash:#e6e0d0;
+  --selbg:#191712;
+  --selfg:#f4f1e8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Helvetica Neue",Helvetica,Arial,"Segoe UI",sans-serif;
+  font-size:13px;
+  -webkit-font-smoothing:antialiased;
+}
+[hidden]{display:none!important}
+button{font-family:inherit;color:inherit}
+h1,h2,p,ul{margin:0}
+svg text{user-select:none}
+
+/* ---------- header ---------- */
+header.top{
+  display:flex;flex-wrap:wrap;gap:12px 26px;align-items:flex-start;
+  padding:14px 18px 10px;border-bottom:2px solid var(--ink);
+}
+.brand h1{font-size:22px;font-weight:800;letter-spacing:.06em}
+.brand p{font-size:11.5px;color:var(--mid);margin-top:2px}
+.ctrl-block{display:flex;flex-direction:column;gap:4px}
+.ctrl-block .lbl{font-size:9.5px;letter-spacing:.16em;font-weight:700;color:var(--mid)}
+.seg{display:flex;gap:0}
+.seg button{
+  border:1px solid var(--ink);border-right-width:0;background:transparent;
+  padding:4px 10px;font-size:11px;font-weight:600;letter-spacing:.04em;cursor:pointer;
+}
+.seg button:last-child{border-right-width:1px}
+.seg button:hover{background:var(--wash)}
+.seg button.on{background:var(--selbg);color:var(--selfg)}
+.chips{display:flex;flex-wrap:wrap;gap:3px;max-width:430px}
+.chip{
+  border:1px solid var(--ink);background:transparent;padding:2px 7px;
+  font-size:11.5px;font-weight:600;cursor:pointer;
+}
+.chip:hover{background:var(--wash)}
+.chip.on{background:var(--selbg);color:var(--selfg)}
+.center-chip{
+  font-size:12px;font-weight:700;min-width:56px;display:inline-block;
+  border:1px dashed var(--ink);padding:2px 8px;
+}
+.center-chip.set{border-style:solid;background:var(--wash)}
+
+/* ---------- layout ---------- */
+main.poster{
+  display:grid;grid-template-columns:minmax(430px,472px) minmax(560px,1fr);
+  gap:14px;padding:14px 18px 20px;align-items:start;
+}
+.panel{border:1px solid var(--ink);background:var(--paper)}
+.panel + .panel{margin-top:14px}
+.bar{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  background:var(--selbg);color:var(--selfg);
+  padding:3px 8px;font-size:10.5px;font-weight:700;letter-spacing:.16em;
+}
+.bar .seg button{border-color:var(--paper);color:var(--paper)}
+.bar .seg button:hover{background:#3a362c}
+.bar .seg button.on{background:var(--paper);color:var(--selbg)}
+.bar .bar-aux{font-size:10px;letter-spacing:.06em;font-weight:600;color:#cfc9b8}
+.hint{font-size:10.5px;color:var(--mid);line-height:1.45;padding:6px 8px;border-top:1px solid var(--line)}
+
+/* ---------- generic small tables ---------- */
+table{border-collapse:collapse;width:100%}
+td,th{border:1px solid var(--line);padding:2px 4px;text-align:center;vertical-align:middle}
+
+/* ---------- moveable chords ---------- */
+table.mov td{padding:4px 2px}
+table.mov td.rowlbl{
+  font-size:12px;font-weight:700;width:52px;background:var(--paper2);cursor:pointer;
+}
+table.mov td.rowlbl:hover{background:var(--wash)}
+table.mov td.rowlbl.on{background:var(--selbg);color:var(--selfg)}
+table.mov thead th{font-size:10px;letter-spacing:.1em;background:var(--paper2)}
+table.mov td.cell{padding:3px}
+table.mov td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background:#fffef7}
+.mov svg{display:block;width:100%;height:auto}
+.root-chips{padding:6px 8px;border-bottom:1px solid var(--line)}
+
+/* ---------- basic chords ---------- */
+table.bas td{padding:3px 2px}
+table.bas td.rowlbl{font-size:11.5px;font-weight:700;background:var(--paper2);width:46px}
+table.bas thead th{font-size:12px;font-weight:800;background:var(--paper2)}
+table.bas td.cell.on{outline:2px solid var(--ink);outline-offset:-2px;background:#fffef7}
+.bas svg{display:block;width:100%;height:auto}
+
+/* ---------- chord formula ---------- */
+table.frm td,table.frm th{font-size:11.5px;padding:2px 6px;text-align:left}
+table.frm th{font-size:9.5px;letter-spacing:.12em;background:var(--paper2)}
+table.frm td.grp{font-size:9px;letter-spacing:.1em;color:var(--mid);font-weight:700;width:64px}
+table.frm tr.on td{background:var(--selbg);color:var(--selfg)}
+table.frm tr.on td.grp{color:#cfc9b8}
+table.frm td.fname{font-weight:700;cursor:pointer;width:88px}
+table.frm td.fform{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.05em}
+table.frm td.fnotes{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--mid);cursor:pointer}
+table.frm tr:hover td{background:var(--wash)}
+table.frm tr.on:hover td{background:var(--selbg)}
+
+/* ---------- circle of fifths ---------- */
+#cofSvg{display:block;width:100%;max-width:420px;height:auto;margin:0 auto}
+#cofSvg .seg-outline{fill:none;stroke:var(--ink);stroke-width:1.2}
+#cofSvg .cof-seg{fill:var(--paper);stroke:var(--ink);stroke-width:1.2;cursor:pointer}
+#cofSvg .cof-seg:hover{fill:var(--wash)}
+#cofSvg .cof-seg.min{fill:var(--paper2)}
+#cofSvg .cof-seg.on{fill:var(--selbg)}
+#cofSvg .cof-name{font-size:17px;font-weight:800;pointer-events:none}
+#cofSvg .cof-name.min-name{font-size:11px;font-weight:700}
+#cofSvg .cof-roman{font-size:9px;font-weight:600;pointer-events:none}
+#cofSvg .cof-sig{font-size:8.5px;pointer-events:none}
+#cofSvg .cof-seg.on text{fill:var(--selfg)}
+#cofSvg .cof-dim{font-size:7.5px;fill:var(--mid);pointer-events:none}
+#cofSvg .cof-center-big{font-size:30px;font-weight:800}
+#cofSvg .cof-center-sub{font-size:10.5px;font-weight:600;fill:var(--mid)}
+#cofSvg .cof-center-deg{font-size:12px;font-weight:700}
+
+/* ---------- key chord tables ---------- */
+.kwrap{display:grid;grid-template-columns:1fr;gap:12px;padding:8px}
+@media(min-width:1240px){.kwrap{grid-template-columns:1fr 1fr}}
+.ktitle{font-size:10px;font-weight:700;letter-spacing:.14em;padding:2px 0 4px}
+table.keys td,table.keys th{padding:1px 2px;font-size:11px}
+table.keys th.deg{font-size:9px;letter-spacing:.06em;background:var(--paper2)}
+table.keys td.kname{font-weight:800;background:var(--paper2);width:26px;cursor:pointer}
+table.keys td.kname:hover{background:var(--wash)}
+table.keys td.kname.on{background:var(--selbg);color:var(--selfg)}
+table.keys td.kc{cursor:pointer;font-weight:600;line-height:1.15}
+table.keys td.kc small{display:block;font-size:8.5px;font-weight:600;color:var(--mid)}
+table.keys td.kc:hover{background:var(--wash)}
+table.keys td.kc.on{background:var(--selbg);color:var(--selfg)}
+table.keys td.kc.on small{color:#cfc9b8}
+
+/* ---------- fretboard & scale diagrams ---------- */
+.fretbox{padding:8px 8px 2px}
+#fretSvg,#chromSvg{display:block;width:100%;height:auto}
+.g-fret{stroke:var(--line);stroke-width:1.4}
+.g-string{stroke:var(--line)}
+.g-nut{fill:var(--ink)}
+.g-inlay{fill:var(--wash)}
+.g-fnum{fill:var(--mid);font-size:9.5px;text-anchor:middle}
+.g-slbl{fill:var(--mid);font-size:8.5px;text-anchor:middle;font-weight:600}
+.g-mark{cursor:pointer}
+.g-mark circle.dot{stroke:var(--ink);stroke-width:1.2}
+.g-mark.scale circle.dot{fill:var(--paper);fill-opacity:.25}
+.g-mark.scale text{fill:var(--ink)}
+.g-mark.chordt circle.dot{fill:var(--selbg)}
+.g-mark.chordt text{fill:var(--selfg)}
+.g-mark.both circle.dot{fill:var(--selbg)}
+.g-mark.both text{fill:var(--selfg)}
+.g-mark circle.cring{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.5}
+.g-mark:hover circle.dot{stroke-width:2.4}
+.g-mark text{font-size:9.5px;font-weight:700;text-anchor:middle;pointer-events:none}
+.scale-row{display:grid;grid-template-columns:132px 1fr;gap:0;border-top:1px solid var(--line);cursor:pointer}
+.scale-row:first-child{border-top:0}
+.scale-row:hover{background:var(--wash)}
+.scale-row.on{background:#fffef7}
+.scale-info{padding:7px 8px;border-right:1px solid var(--line)}
+.scale-info .sname{font-size:12px;font-weight:800}
+.scale-info .sdegs{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:var(--mid);margin-top:2px}
+.scale-row.on .sdegs{color:var(--ink)}
+.scale-svg{padding:4px 6px}
+.scale-svg svg{display:block;width:100%;height:auto}
+
+/* ---------- cross-highlight ---------- */
+[data-pc].xhl{box-shadow:inset 0 0 0 2px var(--ink)}
+g[data-pc].xhl circle.dot{stroke-width:2.8}
+g[data-pc].xhl rect,g[data-pc].xhl path{stroke-width:2.4}
+text[data-pc].xhl{fill:#fff;background:var(--ink)}
+td[data-pc].xhl,span[data-pc].xhl,button[data-pc].xhl{background:#fffef7}
+tr[data-pc] td{}
+
+/* ---------- tooltip ---------- */
+#tip{
+  position:fixed;z-index:50;pointer-events:none;
+  background:#fffdf4;border:1px solid var(--ink);
+  padding:5px 9px;font-size:11px;line-height:1.5;color:var(--ink);
+  box-shadow:3px 3px 0 rgba(25,23,18,.18);
+}
+#tip .t-big{font-size:14px;font-weight:800}
+#tip .t-mid{color:var(--mid)}
+
+/* ---------- footer ---------- */
+footer.info{
+  margin:0 18px 20px;border-top:2px solid var(--ink);padding-top:8px;
+  display:flex;justify-content:space-between;flex-wrap:gap 8px;gap:8px;
+  font-size:10.5px;color:var(--mid);
+}
+
+/* ---------- responsive ---------- */
+@media(max-width:1080px){
+  main.poster{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>GUITAR CHART</h1>
+    <p>interactive moveable-chord &amp; harmony reference · one model, many synced views</p>
+  </div>
+  <div class="ctrl-block">
+    <span class="lbl">SHOW</span>
+    <div class="seg" id="displayRow"></div>
+  </div>
+  <div class="ctrl-block">
+    <span class="lbl">KEY</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="chips" id="keyRow"></div>
+      <div class="seg" id="keyModeRow"></div>
+    </div>
+  </div>
+  <div class="ctrl-block">
+    <span class="lbl">LOCAL CENTER</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="center-chip" id="centerChip">—</span>
+      <button class="chip" id="clearCenter">clear</button>
+    </div>
+  </div>
+</header>
+
+<main class="poster">
+  <!-- left: moveable chords -->
+  <section class="panel" id="movableSec">
+    <div class="bar"><span>MOVEABLE CHORDS</span><span class="bar-aux" id="movRootLabel"></span></div>
+    <div class="chips root-chips" id="rootRow"></div>
+    <table class="mov">
+      <thead><tr><th></th><th>ROOT 6</th><th>ROOT 5</th><th>ROOT 4</th></tr></thead>
+      <tbody id="movBody"></tbody>
+    </table>
+    <p class="hint">One shape for every root — pick a root and all 23 diagrams transpose, the shape never changes.
+    Hover a dot for string · fret · note · degree · interval. Click a diagram to select that chord everywhere.</p>
+  </section>
+
+  <!-- right column -->
+  <div class="col-right">
+
+    <section class="panel">
+      <div class="bar"><span>BASIC CHORDS</span><span class="bar-aux" id="basicKeyLabel"></span></div>
+      <table class="bas">
+        <thead><tr id="basicHead"></tr></thead>
+        <tbody id="basicBody"></tbody>
+      </table>
+      <p class="hint">Open-position chords in every natural-note key. Hover for chord degrees, click to select.</p>
+    </section>
+
+    <section class="panel">
+      <div class="bar"><span>CHORD FORMULA</span><span class="bar-aux" id="frmNotesHdr"></span></div>
+      <table class="frm">
+        <thead><tr><th>CHORD</th><th>FORMULA</th><th>NOTES</th></tr></thead>
+        <tbody id="formulaBody"></tbody>
+      </table>
+    </section>
+
+    <section class="panel">
+      <div class="bar">
+        <span>CIRCLE OF FIFTHS</span>
+        <div class="seg" id="cofModeRow"></div>
+      </div>
+      <div class="fretbox">
+        <svg id="cofSvg" viewBox="0 0 380 380" role="img" aria-label="Circle of fifths"></svg>
+      </div>
+      <p class="hint" id="cofHint"></p>
+    </section>
+
+    <section class="panel">
+      <div class="bar"><span>KEY CHORDS</span><span class="bar-aux" id="keyChordsAux"></span></div>
+      <div class="kwrap">
+        <div>
+          <div class="ktitle">MAJOR KEY CHORDS</div>
+          <table class="keys" id="majKeyTable"></table>
+        </div>
+        <div>
+          <div class="ktitle">MINOR KEY CHORDS</div>
+          <table class="keys" id="minKeyTable"></table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="bar">
+        <span>FRETBOARD</span>
+        <div class="seg" id="fretFilterRow"></div>
+      </div>
+      <div class="fretbox"><svg id="fretSvg" viewBox="0 0 790 192" role="img" aria-label="Guitar fretboard"></svg></div>
+      <p class="hint" id="fretInfo"></p>
+    </section>
+
+    <section class="panel">
+      <div class="bar"><span>SCALES FROM MAJOR</span><span class="bar-aux" id="scalesKeyLabel"></span></div>
+      <div id="scalesBody"></div>
+    </section>
+
+    <section class="panel">
+      <div class="bar"><span>MORE SCALES</span></div>
+      <div id="extraScalesBody"></div>
+    </section>
+
+    <section class="panel">
+      <div class="bar"><span>NOTES ON THE FRETBOARD</span></div>
+      <div class="fretbox"><svg id="chromSvg" viewBox="0 0 720 152" role="img" aria-label="All notes on the fretboard"></svg></div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="info">
+  <span>Adapted from the printed guitar poster by mtprojects.space (CC BY-NC) · interactive rebuild</span>
+  <span>HTML + CSS + vanilla JS + SVG · no dependencies · single file</span>
+</footer>
+
+<div id="tip" hidden></div>
+
+<script id="music-model">
+'use strict';
+/* ============================================================
+   MUSIC MODEL — the single source of truth.
+   Every component (diagrams, formula table, circle of fifths,
+   key tables, fretboard, scales) renders from this data only.
+   Pure data + pure functions; no DOM access here.
+   ============================================================ */
+
+// Note names, flats preferred (matches the printed poster).
+const NOTES = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+
+// Default degree label per semitone offset from the reference.
+const DEG_NAMES = ['1','♭2','2','♭3','3','4','♭5','5','♭6','6','♭7','7'];
+
+// Interval quality name per semitone offset.
+const INT_NAMES = ['P1','m2','M2','m3','M3','P4','♭5','P5','m6','M6','m7','M7'];
+
+// Open string pitch classes, string 6 (low E) first.
+const TUNING = [4, 9, 2, 7, 11, 4];
+
+// Fretboard span used by neck views.
+const FRETS = 12;
+
+/* ---------- chord types ----------
+   pcs    : pitch-class offsets from the chord root (semitones)
+   degs   : display formula (degree string)
+   ovr    : context-dependent label overrides {semitone:{deg,int}}
+*/
+const CHORDS = {
+  maj:    { name:'Maj',    suf:'',      group:'MAJOR',      pcs:[0,4,7],          degs:'1 3 5' },
+  maj6:   { name:'Maj 6',  suf:'6',     group:'MAJOR',      pcs:[0,4,7,9],        degs:'1 3 5 6' },
+  maj7:   { name:'Maj 7',  suf:'maj7',  group:'MAJOR',      pcs:[0,4,7,11],       degs:'1 3 5 7' },
+  maj9:   { name:'Maj 9',  suf:'maj9',  group:'MAJOR',      pcs:[0,4,7,11,2],     degs:'1 3 5 7 9' },
+  maj11:  { name:'Maj 11', suf:'maj11', group:'MAJOR',      pcs:[0,4,7,11,2,5],   degs:'1 3 5 7 9 11' },
+  maj13:  { name:'Maj 13', suf:'maj13', group:'MAJOR',      pcs:[0,4,7,11,2,5,9], degs:'1 3 5 7 9 11 13' },
+  sus2:   { name:'Sus 2',  suf:'sus2',  group:'SUS',        pcs:[0,2,7],          degs:'1 2 5' },
+  sus4:   { name:'Sus 4',  suf:'sus4',  group:'SUS',        pcs:[0,5,7],          degs:'1 4 5' },
+  '7':    { name:'7',      suf:'7',     group:'DOMINANT',   pcs:[0,4,7,10],       degs:'1 3 5 ♭7' },
+  '9':    { name:'9',      suf:'9',     group:'DOMINANT',   pcs:[0,4,7,10,2],     degs:'1 3 5 ♭7 9' },
+  '11':   { name:'11',     suf:'11',    group:'DOMINANT',   pcs:[0,4,7,10,2,5],   degs:'1 3 5 ♭7 9 11' },
+  '13':   { name:'13',     suf:'13',    group:'DOMINANT',   pcs:[0,4,7,10,2,9],   degs:'1 3 5 ♭7 9 13' },
+  '7sus4':{ name:'7 Sus 4',suf:'7sus4', group:'DOMINANT',   pcs:[0,5,7,10],       degs:'1 4 5 ♭7' },
+  alt7:   { name:'Alt 7',  suf:'7♭5',   group:'DOMINANT',   pcs:[0,4,6,10],       degs:'1 3 ♭5 ♭7',
+            ovr:{ 6:{deg:'♭5', int:'d5'} } },
+  min:    { name:'Min',    suf:'m',     group:'MINOR',      pcs:[0,3,7],          degs:'1 ♭3 5' },
+  min6:   { name:'Min 6',  suf:'m6',     group:'MINOR',      pcs:[0,3,7,9],        degs:'1 ♭3 5 6' },
+  min7:   { name:'Min 7',  suf:'m7',    group:'MINOR',      pcs:[0,3,7,10],       degs:'1 ♭3 5 ♭7' },
+  mmaj7:  { name:'mM 7',   suf:'mMaj7', group:'MINOR',      pcs:[0,3,7,11],       degs:'1 ♭3 5 7' },
+  min9:   { name:'Min 9',  suf:'m9',    group:'MINOR',      pcs:[0,3,7,10,2],     degs:'1 ♭3 5 ♭7 9' },
+  min11:  { name:'Min 11', suf:'m11',   group:'MINOR',      pcs:[0,3,7,10,2,5],   degs:'1 ♭3 5 ♭7 9 11' },
+  dim:    { name:'Dim',    suf:'°',     group:'DIM.',       pcs:[0,3,6],          degs:'1 ♭3 ♭5',
+            ovr:{ 6:{deg:'♭5', int:'d5'} } },
+  dim7:   { name:'Dim 7',  suf:'°7',    group:'DIM.',       pcs:[0,3,6,9],        degs:'1 ♭3 ♭5 ♭♭7',
+            ovr:{ 6:{deg:'♭5', int:'d5'}, 9:{deg:'♭♭7', int:'d7'} } },
+  m7b5:   { name:'m7♭5',   suf:'m7♭5',  group:'DIM.',       pcs:[0,3,6,10],       degs:'1 ♭3 ♭5 ♭7',
+            ovr:{ 6:{deg:'♭5', int:'d5'} } },
+  aug:    { name:'Aug',    suf:'+',     group:'AUG.',       pcs:[0,4,8],          degs:'1 3 ♯5',
+            ovr:{ 8:{deg:'♯5', int:'A5'}, 6:{deg:'♭5', int:'d5'} } },
+  aug7:   { name:'Aug 7',  suf:'7♯5',   group:'AUG.',       pcs:[0,4,8,10],       degs:'1 3 ♯5 ♭7',
+            ovr:{ 8:{deg:'♯5', int:'A5'}, 6:{deg:'♭5', int:'d5'} } }
+};
+
+// Row order of the moveable chords table (matches the printed poster).
+const MOVABLE_ORDER = ['maj','maj6','maj7','maj9','maj13','sus2','sus4','7','9','13','7sus4','alt7',
+                       'min','min6','min7','mmaj7','min9','min11','dim','dim7','m7b5','aug','aug7'];
+
+// Group order for the formula table.
+const FORMULA_GROUPS = [
+  ['MAJOR','maj','maj6','maj7','maj9','maj11','maj13'],
+  ['SUS','sus2','sus4'],
+  ['DOMINANT','7','9','11','13','7sus4','alt7'],
+  ['MINOR','min','min6','min7','mmaj7','min9','min11'],
+  ['DIM.','dim','dim7','m7b5'],
+  ['AUG.','aug','aug7']
+];
+
+/* ---------- moveable shapes ----------
+   Frets are RELATIVE to the root fret on the root string (rel 0 = root fret).
+   Array order: strings 6,5,4,3,2,1.  -1 = muted.
+   barre: [fromString, toString, rel] (rel defaults to 0).
+   Columns r6/r5/r4 = root on string 6 / 5 / 4.
+*/
+const SHAPES = {
+  maj:   { r6:{f:[0,2,2,1,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,2,1,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,3,2]} },
+  maj6:  { r6:{f:[0,2,2,1,2,0],   barre:[6,1]}, r5:{f:[-1,0,2,2,2,2],  barre:[5,1]}, r4:{f:[-1,-1,0,2,0,2]} },
+  maj7:  { r6:{f:[0,2,1,1,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,1,2,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,2,2], barre:[3,1,2]} },
+  maj9:  { r6:{f:[0,2,1,1,0,2],   barre:[5,1]}, r5:{f:[-1,0,2,1,0,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,2,0]} },
+  maj13: { r6:{f:[0,2,1,1,2,2],   barre:[5,1]}, r5:{f:[-1,0,2,1,2,2],  barre:[5,1]}, r4:{f:[-1,-1,0,2,0,2]} },
+  sus2:  { r6:{f:[0,2,4,4,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,2,0,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,3,0]} },
+  sus4:  { r6:{f:[0,2,2,2,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,2,3,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,3,3]} },
+  '7':   { r6:{f:[0,2,0,1,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,0,2,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,1,2]} },
+  '9':   { r6:{f:[0,2,0,1,0,2],   barre:[5,1]}, r5:{f:[-1,0,2,0,0,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,1,0]} },
+  '13':  { r6:{f:[0,2,0,1,2,2],   barre:[5,1]}, r5:{f:[-1,0,2,0,2,2],  barre:[5,1]}, r4:{f:[-1,-1,0,4,1,2]} },
+  '7sus4':{r6:{f:[0,2,0,2,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,0,3,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,1,3]} },
+  alt7:  { r6:{f:[0,1,0,1,-1,-1]},              r5:{f:[-1,0,1,0,2,-1]},              r4:{f:[-1,-1,0,1,-1,2]} },
+  min:   { r6:{f:[0,2,2,0,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,2,1,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,3,1]} },
+  min6:  { r6:{f:[0,2,2,0,2,0],   barre:[6,1]}, r5:{f:[-1,0,2,2,1,2],  barre:[5,1]}, r4:{f:[-1,-1,0,2,0,1]} },
+  min7:  { r6:{f:[0,2,0,0,0,0],   barre:[6,1]}, r5:{f:[-1,0,2,0,1,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,1,1], barre:[2,1,1]} },
+  mmaj7: { r6:{f:[0,2,2,0,4,-1],  barre:[5,1]}, r5:{f:[-1,0,2,1,1,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,2,1]} },
+  min9:  { r6:{f:[0,2,0,0,0,2],   barre:[5,1]}, r5:{f:[-1,0,2,4,1,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,1,1], barre:[2,1,1]} },
+  min11: { r6:{f:[0,2,2,0,3,0],   barre:[5,1]}, r5:{f:[-1,0,2,0,3,0],  barre:[5,1]}, r4:{f:[-1,-1,0,2,-1,3]} },
+  dim:   { r6:{f:[0,1,2,0,-1,-1]},              r5:{f:[-1,0,1,2,1,-1]},              r4:{f:[-1,-1,0,1,3,1]} },
+  dim7:  { r6:{f:[0,1,2,0,2,0]},                r5:{f:[-1,0,1,2,1,2]},               r4:{f:[-1,-1,0,1,0,1]} },
+  m7b5:  { r6:{f:[0,1,0,0,-1,-1]},              r5:{f:[-1,0,1,0,1,-1]},              r4:{f:[-1,-1,0,1,1,1], barre:[3,1,1]} },
+  aug:   { r6:{f:[0,3,2,1,1,0],   barre:[6,1]}, r5:{f:[-1,0,3,2,2,-1]},              r4:{f:[-1,-1,0,1,3,2]} },
+  aug7:  { r6:{f:[0,3,0,1,1,-1]},               r5:{f:[-1,0,3,0,2,-1]},              r4:{f:[-1,-1,0,1,1,2]} }
+};
+
+/* ---------- basic open chords ----------
+   Absolute frets (0 = open, -1 = muted). Keyed by natural note name.
+   barre: [fromString, toString, fret].
+*/
+const BASIC_ROOTS = { 'A':9, 'B':11, 'C':0, 'D':2, 'E':4, 'F':5, 'G':7 };
+const BASIC_ROWS = ['maj','maj7','7','min','min7'];
+const BASIC = {
+  'A': { maj:  {f:[-1,0,2,2,2,0]},  maj7:{f:[-1,0,2,1,2,0]},  '7':{f:[-1,0,2,0,2,0]},  min:{f:[-1,0,2,2,1,0]},  min7:{f:[-1,0,2,0,1,0]} },
+  'B': { maj:  {f:[-1,2,4,4,4,2], barre:[5,1,2]}, maj7:{f:[-1,2,4,3,4,2], barre:[5,1,2]}, '7':{f:[-1,2,1,2,0,2]}, min:{f:[-1,2,4,4,3,2], barre:[5,1,2]}, min7:{f:[-1,2,0,2,0,2]} },
+  'C': { maj:  {f:[-1,3,2,0,1,0]},  maj7:{f:[-1,3,2,0,0,0]},  '7':{f:[-1,3,2,3,1,0]},  min:{f:[-1,3,5,5,4,3], barre:[5,1,3]}, min7:{f:[-1,3,5,3,4,3], barre:[5,1,3]} },
+  'D': { maj:  {f:[-1,-1,0,2,3,2]}, maj7:{f:[-1,-1,0,2,2,2]}, '7':{f:[-1,-1,0,2,1,2]}, min:{f:[-1,-1,0,2,3,1]}, min7:{f:[-1,-1,0,2,1,1]} },
+  'E': { maj:  {f:[0,2,2,1,0,0]},   maj7:{f:[0,2,1,1,0,0]},   '7':{f:[0,2,0,1,0,0]},   min:{f:[0,2,2,0,0,0]},   min7:{f:[0,2,0,0,0,0]} },
+  'F': { maj:  {f:[1,3,3,2,1,1], barre:[6,1,1]}, maj7:{f:[-1,-1,3,2,1,0]}, '7':{f:[1,3,1,2,1,1], barre:[6,1,1]}, min:{f:[1,3,3,1,1,1], barre:[6,1,1]}, min7:{f:[1,3,1,1,1,1], barre:[6,1,1]} },
+  'G': { maj:  {f:[3,2,0,0,0,3]},   maj7:{f:[3,2,0,0,0,2]},   '7':{f:[3,2,0,0,0,1]},   min:{f:[3,5,5,3,3,3], barre:[6,1,3]}, min7:{f:[3,5,3,3,3,3], barre:[6,1,3]} }
+};
+
+/* ---------- scales ---------- */
+const SCALES = [
+  { id:'ionian',    name:'Ionian',          group:'major', steps:[0,2,4,5,7,9,11],  degs:'1 2 3 4 5 6 7' },
+  { id:'dorian',    name:'Dorian',          group:'major', steps:[0,2,3,5,7,9,10],  degs:'1 2 ♭3 4 5 6 ♭7' },
+  { id:'phrygian',  name:'Phrygian',        group:'major', steps:[0,1,3,5,7,8,10],  degs:'1 ♭2 ♭3 4 5 ♭6 ♭7' },
+  { id:'lydian',    name:'Lydian',          group:'major', steps:[0,2,4,6,7,9,11],  degs:'1 2 3 ♯4 5 6 7' },
+  { id:'mixolydian',name:'Mixolydian',      group:'major', steps:[0,2,4,5,7,9,10],  degs:'1 2 3 4 5 6 ♭7' },
+  { id:'aeolian',   name:'Aeolian',         group:'major', steps:[0,2,3,5,7,8,10],  degs:'1 2 ♭3 4 5 ♭6 ♭7' },
+  { id:'locrian',   name:'Locrian',         group:'major', steps:[0,1,3,5,6,8,10],  degs:'1 ♭2 ♭3 4 ♭5 ♭6 ♭7' },
+  { id:'harmminor', name:'Harmonic Minor',  group:'extra', steps:[0,2,3,5,7,8,11],  degs:'1 2 ♭3 4 5 ♭6 7' },
+  { id:'gypsy',     name:'Hungarian Gypsy', group:'extra', steps:[0,2,3,6,7,8,11],  degs:'1 2 ♭3 ♯4 5 ♭6 7' },
+  { id:'acoustic',  name:'Acoustic Scale',  group:'extra', steps:[0,2,4,6,7,9,10],  degs:'1 2 3 ♯4 5 6 ♭7' }
+];
+// step->label map per scale (so ♯4 / ♭5 / maj-7 contexts read correctly).
+const SCALE_LABELS = {};
+for (const sc of SCALES){
+  const m = {};
+  sc.degs.split(' ').forEach((d,i)=>{ m[sc.steps[i]] = d; });
+  SCALE_LABELS[sc.id] = m;
+}
+
+/* ---------- circle of fifths (clockwise) ---------- */
+const CIRCLE = [
+  { pc:0,  maj:'C',  min:'A',  sig:''   },
+  { pc:7,  maj:'G',  min:'E',  sig:'1♯' },
+  { pc:2,  maj:'D',  min:'B',  sig:'2♯' },
+  { pc:9,  maj:'A',  min:'F♯', sig:'3♯' },
+  { pc:4,  maj:'E',  min:'C♯', sig:'4♯' },
+  { pc:11, maj:'B',  min:'G♯', sig:'5♯' },
+  { pc:6,  maj:'F♯', min:'D♯', sig:'6♯' },
+  { pc:1,  maj:'D♭', min:'B♭', sig:'5♭' },
+  { pc:8,  maj:'A♭', min:'F',  sig:'4♭' },
+  { pc:3,  maj:'E♭', min:'C',  sig:'3♭' },
+  { pc:10, maj:'B♭', min:'G',  sig:'2♭' },
+  { pc:5,  maj:'F',  min:'D',  sig:'1♭' }
+];
+// Roman numeral shown on each fifths position, relative to the selected key.
+const COF_ROMAN = { 0:'I', 7:'V', 2:'II', 9:'VI', 4:'III', 11:'VII', 6:'♭V', 1:'♭II', 8:'♭VI', 3:'♭III', 10:'♭VII', 5:'IV' };
+const COF_FN = { 0:'T', 7:'D', 11:'D', 5:'S', 2:'S', 9:'T', 4:'T' };
+
+/* ---------- key chord tables (diatonic sevenths for selection) ---------- */
+const MAJOR_KEY = [
+  { rn:'I',    deg:0,  t:'maj',  s7:'maj7'  },
+  { rn:'ii',   deg:2,  t:'min',  s7:'min7'  },
+  { rn:'iii',  deg:4,  t:'min',  s7:'min7'  },
+  { rn:'IV',   deg:5,  t:'maj',  s7:'maj7'  },
+  { rn:'V',    deg:7,  t:'maj',  s7:'7'     },
+  { rn:'vi',   deg:9,  t:'min',  s7:'min7'  },
+  { rn:'vii°', deg:11, t:'dim',  s7:'m7b5'  }
+];
+const MINOR_KEY = [
+  { rn:'i',    deg:0,  t:'min',  s7:'min7' },
+  { rn:'ii°',  deg:2,  t:'dim',  s7:'m7b5' },
+  { rn:'III',  deg:3,  t:'maj',  s7:'maj7' },
+  { rn:'iv',   deg:5,  t:'min',  s7:'min7' },
+  { rn:'v',    deg:7,  t:'min',  s7:'min7' },
+  { rn:'VI',   deg:8,  t:'maj',  s7:'maj7' },
+  { rn:'VII',  deg:10, t:'maj',  s7:'maj7' }
+];
+
+/* ---------- pure helpers ---------- */
+
+// Fret of pitch class `pc` on string `str` (6..1), lowest octave position.
+function rootFret(pc, str){
+  return ((pc - TUNING[6 - str]) % 12 + 12) % 12;
+}
+
+// Resolve a moveable shape into absolute notes.
+function shapeNotes(typeId, col, rootPc){
+  const sh = SHAPES[typeId] && SHAPES[typeId][col];
+  if (!sh) return null;
+  const rootStr = +col[1];
+  const base = rootFret(rootPc, rootStr);
+  const notes = [];
+  sh.f.forEach((f, i) => {
+    if (f < 0) return;
+    const pc = (TUNING[i] + base + f) % 12;
+    notes.push({ str:6 - i, fret:base + f, rel:f, pc, semi:(pc - rootPc + 12) % 12 });
+  });
+  return { base, rootStr, notes };
+}
+
+// Resolve a basic open chord into absolute notes.
+function basicNotes(letter, typeId){
+  const sh = BASIC[letter][typeId];
+  const rootPc = BASIC_ROOTS[letter];
+  const notes = [];
+  sh.f.forEach((f, i) => {
+    if (f < 0) return;
+    const pc = (TUNING[i] + f) % 12;
+    notes.push({ str:6 - i, fret:f, pc, semi:(pc - rootPc + 12) % 12 });
+  });
+  return { rootPc, notes };
+}
+
+// Degree label for a chord tone (context overrides for ♯5/♭5/♭♭7).
+function chordDegLabel(typeId, semi){
+  const c = CHORDS[typeId];
+  return (c.ovr && c.ovr[semi] && c.ovr[semi].deg) || DEG_NAMES[semi];
+}
+function chordIntLabel(typeId, semi){
+  const c = CHORDS[typeId];
+  return (c.ovr && c.ovr[semi] && c.ovr[semi].int) || INT_NAMES[semi];
+}
+// Degree label inside a scale (♯4 etc.).
+function scaleDegLabel(scaleId, semi){
+  return (SCALE_LABELS[scaleId] && SCALE_LABELS[scaleId][semi]) || DEG_NAMES[semi];
+}
+
+// Chord display name: root note + suffix, e.g. "G7", "B♭m7".
+function chordName(rootPc, typeId){
+  return NOTES[rootPc] + CHORDS[typeId].suf;
+}
+
+// Diatonic chords of a key: [{root, typeId(s7), rn, deg}].
+function keyChords(keyPc, mode){
+  const rows = mode === 'major' ? MAJOR_KEY : MINOR_KEY;
+  return rows.map(r => ({ root:(keyPc + r.deg) % 12, typeId:r.s7, rn:r.rn, deg:r.deg }));
+}
+
+// Model self-check: verify every shape only sounds chord tones and
+// carries the root on its root string (used by the test suite).
+function verifyShapes(){
+  const errs = [];
+  for (const t of MOVABLE_ORDER){
+    for (const col of ['r6','r5','r4']){
+      for (let pc = 0; pc < 12; pc++){
+        const r = shapeNotes(t, col, pc);
+        if (!r){ errs.push(t + '/' + col + ': missing'); continue; }
+        const pcs = new Set(r.notes.map(n => n.pc));
+        if (pcs.size < 3) errs.push(t + '/' + col + '/' + pc + ': thin (' + pcs.size + ')');
+        for (const n of r.notes){
+          if (!CHORDS[t].pcs.includes(n.semi)) errs.push(t + '/' + col + '/' + pc + ': s' + n.str + ' off-formula');
+        }
+        const rootNote = r.notes.find(n => n.str === r.rootStr);
+        if (!rootNote || rootNote.semi !== 0) errs.push(t + '/' + col + '/' + pc + ': no root on s' + r.rootStr);
+      }
+    }
+  }
+  for (const letter in BASIC){
+    for (const t of BASIC_ROWS){
+      const r = basicNotes(letter, t);
+      const pcs = new Set(r.notes.map(n => n.pc));
+      if (pcs.size < 3) errs.push('basic/' + letter + '/' + t + ': thin');
+      for (const n of r.notes){
+        if (!CHORDS[t].pcs.includes(n.semi)) errs.push('basic/' + letter + '/' + t + ': s' + n.str + ' off-formula');
+      }
+      if (!r.notes.some(n => n.semi === 0)) errs.push('basic/' + letter + '/' + t + ': no root');
+    }
+  }
+  return errs;
+}
+
+// Export for the test harness.
+if (typeof window !== 'undefined'){
+  window.__MODEL = { NOTES, DEG_NAMES, INT_NAMES, TUNING, CHORDS, SHAPES, BASIC, BASIC_ROOTS,
+    BASIC_ROWS, SCALES, CIRCLE, MAJOR_KEY, MINOR_KEY, MOVABLE_ORDER, FORMULA_GROUPS,
+    rootFret, shapeNotes, basicNotes, chordDegLabel, chordIntLabel, scaleDegLabel,
+    chordName, keyChords, verifyShapes };
+}
+</script>
+
+<script>
+'use strict';
+/* ============================================================
+   APP — rendering & interaction (reads the model above).
+   ============================================================ */
+/* ============================================================
+   State (persisted)
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+const LSKEY = 'guitar-poster-v1';
+function defaultState(){
+  return {
+    keyPc: 0,            // selected key tonic pitch class
+    keyMode: 'major',    // 'major' | 'minor'
+    root: 0,             // root pc for moveable diagrams
+    display: 'deg',      // 'deg' | 'note' | 'int'  (degrees first by design)
+    sel: { root: 0, type: 'maj' },   // selected chord (drives sync everywhere)
+    scale: 'ionian',     // scale shown on fretboard & scale rows
+    center: null,        // local harmonic center pc (null = off)
+    cofMode: 'names',    // 'names' | 'romans' | 'functions'
+    filter: 'both'       // fretboard filter: 'chord' | 'scale' | 'both' | 'chrom'
+  };
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LSKEY);
+    if (!raw) return defaultState();
+    const s = JSON.parse(raw);
+    return Object.assign(defaultState(), s);
+  }catch(err){ return defaultState(); }
+}
+let state = loadState();
+function save(){ try{ localStorage.setItem(LSKEY, JSON.stringify(state)); }catch(err){} }
+
+/* ============================================================
+   Small helpers
+   ============================================================ */
+function el(name, attrs, parent){
+  const e = document.createElementNS(SVGNS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function h(tag, attrs, parent){
+  const e = document.createElement(tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function fmtNote(pc){ return NOTES[pc]; }
+
+// Label of an absolute pitch class seen from reference `ref`
+// under the active display mode.
+function labelOf(pc, ref, opts){
+  if (state.display === 'note') return NOTES[pc];
+  const semi = (pc - ref + 12) % 12;
+  if (state.display === 'int') return (opts && opts.intOf) ? opts.intOf(semi) : INT_NAMES[semi];
+  return (opts && opts.degOf) ? opts.degOf(semi) : DEG_NAMES[semi];
+}
+
+/* ============================================================
+   Tooltip (single floating element)
+   ============================================================ */
+const tip = $('tip');
+function showTip(html, e){
+  tip.innerHTML = html;
+  tip.hidden = false;
+  moveTip(e);
+}
+function moveTip(e){
+  const pad = 12;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  const r = tip.getBoundingClientRect();
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - pad;
+  if (y + r.height > innerHeight - 8) y = e.clientY - r.height - pad;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+function hideTip(){ tip.hidden = true; }
+document.addEventListener('pointermove', e => {
+  const t = e.target.closest && e.target.closest('[data-tip]');
+  if (t){ showTip(t.dataset.tip, e); } else hideTip();
+}, true);
+
+/* ============================================================
+   Cross-highlight registry
+   Every element carrying data-pc gets .xhl when the hovered
+   musical object resolves to the same pitch class.
+   ============================================================ */
+let hoverPc = null;
+let pcEls = [];
+function refreshPcEls(){ pcEls = [...document.querySelectorAll('[data-pc]')]; applyHover(); }
+function applyHover(){
+  for (const e of pcEls) e.classList.toggle('xhl', hoverPc != null && +e.dataset.pc === hoverPc);
+}
+function setHover(pc){ hoverPc = pc; applyHover(); }
+// Generic binding: elements with data-pc (optionally data-ref/data-semi).
+document.addEventListener('pointerover', e => {
+  const t = e.target.closest && e.target.closest('[data-pc]');
+  if (t) setHover(+t.dataset.pc);
+}, true);
+document.addEventListener('pointerout', e => {
+  const t = e.target.closest && e.target.closest('[data-pc]');
+  if (t && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('[data-pc]') === t)) setHover(null);
+}, true);
+
+/* ============================================================
+   Actions (the sync core)
+   ============================================================ */
+function selectChord(rootPc, typeId, keepRoot){
+  state.sel = { root: rootPc, type: typeId };
+  if (!keepRoot) state.root = rootPc;
+  renderAll();
+}
+function selectKey(pc, mode){
+  state.keyPc = pc;
+  state.keyMode = mode || state.keyMode;
+  renderAll();
+}
+function toggleCenter(pc){
+  state.center = (state.center === pc) ? null : pc;
+  renderAll();
+}
+function setDisplay(mode){ state.display = mode; renderAll(); }
+
+/* ============================================================
+   Chord diagram (SVG)
+   ============================================================ */
+const DG = { w:104, strX0:16, strGap:15, top:24, rowH:23 };
+
+function chordDiagram(typeId, frets, barre, base, opts){
+  // frets: relative or absolute array (strings 6..1); base = absolute fret of rel 0
+  const o = opts || {};
+  const maxRel = Math.max(...frets.filter(f => f >= 0));
+  const rows = Math.max(4, maxRel + 1);
+  const width = DG.w, height = DG.top + rows * DG.rowH + 8;
+  const svg = el('svg', { viewBox:`0 0 ${width} ${height}`, 'data-chord':typeId });
+
+  // fret lines
+  for (let r = 0; r <= rows; r++){
+    el('line', { x1:DG.strX0 - 6, y1:DG.top + r * DG.rowH, x2:DG.strX0 + 5 * DG.strGap + 6,
+      y2:DG.top + r * DG.rowH, class:'g-fret', 'stroke-width':1.1 }, svg);
+  }
+  // nut or position label
+  if (base === 0 && !o.nutAt !== false){
+    el('rect', { x:DG.strX0 - 7, y:DG.top - 3.4, width:5 * DG.strGap + 12, height:3.4, class:'g-nut' }, svg);
+  } else {
+    const t = el('text', { x:DG.strX0 - 10, y:DG.top + DG.rowH * 0.5 + 3, class:'g-slbl' }, svg);
+    t.textContent = base + 'fr';
+  }
+  // strings (low E on the left) + open/mute markers
+  for (let i = 0; i < 6; i++){
+    const x = DG.strX0 + i * DG.strGap;
+    el('line', { x1:x, y1:DG.top, x2:x, y2:DG.top + rows * DG.rowH, class:'g-string', 'stroke-width':1.1 }, svg);
+    const m = el('text', { x:x, y:DG.top - 8, class:'g-slbl' }, svg);
+    m.textContent = frets[i] < 0 ? '×' : (frets[i] === 0 && base === 0 ? '○' : '');
+  }
+  // barre
+  if (barre){
+    const [from, to, rel] = barre;
+    const i0 = 6 - from, i1 = 6 - to;
+    const y = DG.top + rel * DG.rowH + DG.rowH / 2;
+    const barreAttrs = { x:DG.strX0 + i0 * DG.strGap - 6.5, y:y - 6.5,
+      width:(i1 - i0) * DG.strGap + 13, height:13, rx:6.5,
+      fill:'var(--ink)', opacity:.92, class:'barre' };
+    if (o.rootPc != null) barreAttrs['data-pc'] = o.rootPc;
+    el('rect', barreAttrs, svg);
+  }
+  // dots
+  const ref = o.ref != null ? o.ref : o.rootPc;
+  for (let i = 0; i < 6; i++){
+    const f = frets[i];
+    if (f < 0) continue;
+    const pc = (TUNING[i] + base + f) % 12;
+    const semi = (pc - o.rootPc + 12) % 12;
+    const x = DG.strX0 + i * DG.strGap;
+    const y = DG.top + f * DG.rowH + DG.rowH / 2;
+    const isRoot = semi === 0;
+    const g = el('g', { class:'cdot', 'data-pc':pc }, svg);
+    el('circle', { cx:x, cy:y, r:7.6, class:'dot',
+      fill:isRoot ? 'var(--ink)' : 'var(--paper)', stroke:'var(--ink)', 'stroke-width':1.3 }, g);
+    const label = o.typeId
+      ? (state.display === 'note' ? NOTES[pc]
+        : state.display === 'int' ? chordIntLabel(o.typeId, semi)
+        : chordDegLabel(o.typeId, semi))
+      : DEG_NAMES[semi];
+    const t = el('text', { x:x, y:y + 2.8, 'text-anchor':'middle', 'font-size':'7.6px',
+      'font-weight':700, fill:isRoot ? 'var(--selfg)' : 'var(--ink)' }, g);
+    t.textContent = label;
+    // hover info: string · fret · note · degree · interval
+    g.dataset.pc = pc;
+    g.dataset.tip = `<span class="t-big">${NOTES[pc]}</span> · string ${6 - i} · fret ${base + f}<br>` +
+      (o.typeId
+        ? `degree ${chordDegLabel(o.typeId, semi)} · interval ${chordIntLabel(o.typeId, semi)}` +
+          `<br><span class="t-mid">${chordName(o.rootPc, o.typeId)}</span>`
+        : `degree ${DEG_NAMES[semi]} · interval ${INT_NAMES[semi]}`);
+    g.addEventListener('click', ev => {
+      ev.stopPropagation();
+      if (o.onClick) o.onClick(pc);
+    });
+  }
+  return svg;
+}
+
+// Movable cell diagram: relative shape at the current root.
+function movableDiagram(typeId, col, rootPc){
+  const sh = SHAPES[typeId][col];
+  const base = rootFret(rootPc, +col[1]);
+  return chordDiagram(typeId, sh.f, sh.barre, base,
+    { rootPc, typeId, ref:rootPc, onClick:pc => {} });
+}
+
+/* ============================================================
+   Moveable chords table
+   ============================================================ */
+function buildMovable(){
+  const tb = $('movBody');
+  tb.innerHTML = '';
+  for (const t of MOVABLE_ORDER){
+    const tr = h('tr', {}, tb);
+    const lbl = h('td', { class:'rowlbl', 'data-type':t }, tr);
+    lbl.textContent = CHORDS[t].name;
+    lbl.addEventListener('click', () => selectChord(state.root, t));
+    for (const col of ['r6','r5','r4']){
+      const td = h('td', { class:'cell', 'data-col':col, 'data-type':t }, tr);
+      td.addEventListener('click', () => selectChord(state.root, t));
+    }
+  }
+}
+function renderMovable(){
+  $('movRootLabel').textContent = 'root: ' + NOTES[state.root];
+  const tb = $('movBody');
+  for (const tr of tb.children){
+    const t = tr.children[0].dataset.type;
+    tr.children[0].classList.toggle('on', state.sel && state.sel.type === t && state.sel.root === state.root);
+    for (let c = 1; c <= 3; c++){
+      const td = tr.children[c];
+      const col = ['r6','r5','r4'][c - 1];
+      td.innerHTML = '';
+      td.appendChild(movableDiagram(t, col, state.root));
+      td.classList.toggle('on', !!(state.sel && state.sel.type === t &&
+        rootFret(state.sel.root, +col[1]) === rootFret(state.root, +col[1]) && state.sel.root === state.root));
+    }
+  }
+}
+
+/* ============================================================
+   Basic chords
+   ============================================================ */
+function buildBasic(){
+  const head = $('basicHead');
+  head.innerHTML = '';
+  h('th', {}, head);
+  for (const letter of Object.keys(BASIC_ROOTS)){
+    const th = h('th', {}, head);
+    th.textContent = letter;
+  }
+  const tb = $('basicBody');
+  tb.innerHTML = '';
+  const BASIC_LABELS = { maj:'Maj', maj7:'Maj 7', '7':'Dom 7', min:'Min', min7:'Min 7' };
+  for (const t of BASIC_ROWS){
+    const tr = h('tr', {}, tb);
+    const lbl = h('td', { class:'rowlbl' }, tr);
+    lbl.textContent = BASIC_LABELS[t];
+    for (const letter of Object.keys(BASIC_ROOTS)){
+      h('td', { class:'cell', 'data-letter':letter, 'data-type':t }, tr);
+    }
+  }
+}
+function renderBasic(){
+  const letters = Object.keys(BASIC_ROOTS);
+  $('basicKeyLabel').textContent = 'open position';
+  const tb = $('basicBody');
+  for (let r = 0; r < BASIC_ROWS.length; r++){
+    const tr = tb.children[r];
+    const t = BASIC_ROWS[r];
+    for (let c = 1; c <= letters.length; c++){
+      const letter = letters[c - 1];
+      const td = tr.children[c];
+      const rootPc = BASIC_ROOTS[letter];
+      const bn = basicNotes(letter, t);
+      td.innerHTML = '';
+      td.appendChild(chordDiagram(t, bn.notes.length ? BASIC[letter][t].f : [], BASIC[letter][t].barre, 0,
+        { rootPc, typeId:t, ref:rootPc,
+          onClick:() => selectChord(rootPc, t) }));
+      td.classList.toggle('on', !!(state.sel && state.sel.type === t && state.sel.root === rootPc));
+    }
+  }
+}
+
+/* ============================================================
+   Chord formula table
+   ============================================================ */
+function buildFormula(){
+  const tb = $('formulaBody');
+  tb.innerHTML = '';
+  for (const [group, ...types] of FORMULA_GROUPS){
+    for (const t of types){
+      const tr = h('tr', { 'data-ftype':t }, tb);
+      const g = h('td', { class:'grp' }, tr);
+      g.textContent = group;
+      const n = h('td', { class:'fname' }, tr);
+      n.textContent = CHORDS[t].name;
+      const f = h('td', { class:'fform' }, tr);
+      f.textContent = CHORDS[t].degs;
+      const notes = h('td', { class:'fnotes' }, tr);
+      const pick = () => selectChord(state.root, t);
+      tr.addEventListener('click', pick);
+    }
+  }
+}
+function renderFormula(){
+  $('frmNotesHdr').textContent = 'NOTES of ' + NOTES[state.root];
+  const tb = $('formulaBody');
+  for (const tr of tb.children){
+    const t = tr.dataset.ftype;
+    tr.classList.toggle('on', !!(state.sel && state.sel.type === t));
+    const c = CHORDS[t];
+    // one span per note so cross-highlight can match each pitch class
+    const cell = tr.children[3];
+    cell.innerHTML = '';
+    for (const s of c.pcs){
+      const sp = h('span', { 'data-pc':(state.root + s) % 12 }, cell);
+      sp.textContent = NOTES[(state.root + s) % 12] + ' ';
+    }
+  }
+}
+
+/* ============================================================
+   Key chord tables
+   ============================================================ */
+function buildKeyTables(){
+  for (const [tblId, rows] of [['majKeyTable', MAJOR_KEY], ['minKeyTable', MINOR_KEY]]){
+    const tbl = $(tblId);
+    tbl.innerHTML = '';
+    const thead = h('thead', {}, tbl);
+    const hr = h('tr', {}, thead);
+    h('th', {}, hr);
+    for (const r of rows){
+      const th = h('th', { class:'deg' }, hr);
+      th.textContent = r.rn;
+    }
+    const tbody = h('tbody', {}, tbl);
+    for (let i = 0; i < 12; i++){
+      const tr = h('tr', {}, tbody);
+      h('td', { class:'kname' }, tr);
+      for (const r of rows) h('td', { class:'kc' }, tr);
+    }
+  }
+}
+function renderKeyTables(){
+  const sel = state.sel;
+  for (const [tblId, rows, mode] of [['majKeyTable', MAJOR_KEY, 'major'], ['minKeyTable', MINOR_KEY, 'minor']]){
+    const tbl = $(tblId);
+    const body = tbl.tBodies[0];
+    for (let i = 0; i < 12; i++){
+      const seg = CIRCLE.find(s => s.pc === i);
+      const keyPc = i;
+      const tr = body.children[i];
+      const kn = tr.children[0];
+      // row label: show key name depending on table mode
+      const keyLabel = mode === 'major' ? NOTES[i] : NOTES[i] + 'm';
+      kn.textContent = mode === 'major' ? seg.maj : seg.min;
+      kn.dataset.pc = i;
+      kn.classList.toggle('on', state.keyPc === i && state.keyMode === mode);
+      kn.onclick = () => selectKey(i, mode);
+      kn.dataset.tip = `<span class="t-big">${mode === 'major' ? seg.maj + ' major' : seg.min + ' minor'}</span><br>` +
+        `key signature: ${seg.sig || 'none'}`;
+      for (let c = 0; c < rows.length; c++){
+        const r = rows[c];
+        const td = tr.children[c + 1];
+        const root = (keyPc + r.deg) % 12;
+        td.innerHTML = '';
+        const big = h('span', {}, td);
+        big.textContent = chordName(root, r.t);
+        const small = h('small', {}, td);
+        small.textContent = CHORDS[r.s7].suf;
+        td.dataset.pc = root;
+        td.onclick = () => { selectKey(keyPc, mode); selectChord(root, r.s7); };
+        td.dataset.tip = `<span class="t-big">${chordName(root, r.s7)}</span><br>` +
+          `${r.rn} of ${NOTES[keyPc]} ${mode}<br>formula ${CHORDS[r.s7].degs}`;
+        td.classList.toggle('on', !!(sel && sel.root === root && sel.type === r.s7));
+      }
+    }
+  }
+  $('keyChordsAux').textContent = 'key: ' + NOTES[state.keyPc] + ' ' + state.keyMode;
+}
+/* ============================================================
+   Circle of fifths (SVG, data-driven)
+   ============================================================ */
+const COFC = { cx:190, cy:190 };
+
+function cofSegPath(r0, r1, a0, a1){
+  const P = (r,a) => [COFC.cx + r * Math.cos(a * Math.PI/180), COFC.cy + r * Math.sin(a * Math.PI/180)];
+  const [x0,y0] = P(r1,a0), [x1,y1] = P(r1,a1), [x2,y2] = P(r0,a1), [x3,y3] = P(r0,a0);
+  const laf = (a1 - a0) > 180 ? 1 : 0;
+  return `M${x0.toFixed(2)},${y0.toFixed(2)} A${r1},${r1} 0 ${laf} 1 ${x1.toFixed(2)},${y1.toFixed(2)} ` +
+         `L${x2.toFixed(2)},${y2.toFixed(2)} A${r0},${r0} 0 ${laf} 0 ${x3.toFixed(2)},${y3.toFixed(2)} Z`;
+}
+function cofText(svg, r, angDeg, str, cls, size){
+  const a = angDeg * Math.PI/180;
+  const t = el('text', { x:COFC.cx + r * Math.cos(a), y:COFC.cy + r * Math.sin(a),
+    class:cls, 'text-anchor':'middle', 'dominant-baseline':'middle',
+    'font-size':(size || '') + 'px' }, svg);
+  t.textContent = str;
+  return t;
+}
+function renderCoF(){
+  const svg = $('cofSvg');
+  svg.innerHTML = '';
+  const GAP = 1.1;
+  for (let i = 0; i < 12; i++){
+    const seg = CIRCLE[i];
+    const c = -90 + i * 30;
+    const a0 = c - 15 + GAP, a1 = c + 15 - GAP;
+    const isMajSel = state.keyPc === seg.pc && state.keyMode === 'major';
+    // outer ring: major keys
+    const p = el('path', { d:cofSegPath(120, 178, a0, a1), class:'cof-seg' + (isMajSel ? ' on' : ''),
+      'data-pc':seg.pc }, svg);
+    p.addEventListener('click', () => selectKey(seg.pc, 'major'));
+    p.dataset.tip = `<span class="t-big">${seg.maj} major</span><br>` +
+      `key signature: ${seg.sig || 'none'}<br><span class="t-mid">relative minor: ${seg.min}m</span>`;
+    // ring outlines
+    el('circle', { cx:COFC.cx, cy:COFC.cy, r:178, class:'seg-outline' }, svg);
+    el('circle', { cx:COFC.cx, cy:COFC.cy, r:120, class:'seg-outline' }, svg);
+    el('circle', { cx:COFC.cx, cy:COFC.cy, r:68,  class:'seg-outline' }, svg);
+  }
+  for (let i = 0; i < 12; i++){
+    const seg = CIRCLE[i];
+    const c = -90 + i * 30;
+    const a0 = c - 15 + GAP, a1 = c + 15 - GAP;
+    const minPc = (seg.pc + 9) % 12;
+    const isMinSel = state.keyPc === minPc && state.keyMode === 'minor';
+    // middle ring: relative minors
+    const p = el('path', { d:cofSegPath(68, 118, a0, a1), class:'cof-seg min' + (isMinSel ? ' on' : ''),
+      'data-pc':minPc }, svg);
+    p.addEventListener('click', () => selectKey(minPc, 'minor'));
+    p.dataset.tip = `<span class="t-big">${seg.min} minor</span><br>` +
+      `relative minor of ${seg.maj} major<br><span class="t-mid">vii°: ${NOTES[(seg.pc + 11) % 12]}°</span>`;
+    // innermost labels: the vii° chord of each major key
+    const dim = el('text', { class:'cof-dim', 'text-anchor':'middle' }, svg);
+    dim.setAttribute('x', COFC.cx + 78 * Math.cos(c * Math.PI/180));
+    dim.setAttribute('y', COFC.cy + 78 * Math.sin(c * Math.PI/180) + 2.5);
+    dim.textContent = NOTES[(seg.pc + 11) % 12] + '°';
+    // labels for both rings + key signature
+    const [big, small] = (
+      state.cofMode === 'names'     ? [seg.maj, seg.sig] :
+      state.cofMode === 'romans'    ? [COF_ROMAN[(seg.pc - state.keyPc + 12) % 12], seg.maj] :
+                                      [COF_FN[(seg.pc - state.keyPc + 12) % 12] || '·', seg.maj]
+    );
+    const mt = cofText(svg, 149, c, big, 'cof-name', isMajSel ? 15 : 17);
+    mt.setAttribute('fill', isMajSel ? 'var(--selfg)' : 'var(--ink)');
+    cofText(svg, 131, c, small, 'cof-sig', 8.5);
+    const mn = cofText(svg, 93, c, seg.min, 'cof-name min-name', isMinSel ? 10 : 11);
+    if (isMinSel) mn.setAttribute('fill', 'var(--selfg)');
+  }
+  // center: the selected key
+  const seg = CIRCLE.find(s => s.pc === state.keyPc) || CIRCLE[0];
+  const big = el('text', { x:COFC.cx, y:COFC.cy - 10, class:'cof-center-big', 'text-anchor':'middle' }, svg);
+  big.textContent = NOTES[state.keyPc];
+  const sub = el('text', { x:COFC.cx, y:COFC.cy + 14, class:'cof-center-sub', 'text-anchor':'middle' }, svg);
+  sub.textContent = state.keyMode + (seg.sig ? ' · ' + seg.sig : '');
+  $('cofHint').textContent = 'Clockwise = up a perfect fifth. Outer ring: major keys · middle ring: relative minors · ' +
+    'innermost: the vii° chord of each major key. Click any segment to set the key.';
+}
+
+/* ============================================================
+   Fretboard & scale necks
+   ============================================================ */
+const FBG  = { nutX:36, fretW:59, strY0:30, strGap:26, numY:184, vb:'0 0 790 192', dotR:10.5 };
+const CHG  = { nutX:26, fretW:54, strY0:20, strGap:20, numY:144, vb:'0 0 700 152', dotR:8 };
+const MSG  = { nutX:22, fretW:47, strY0:12, strGap:14, numY:95,  vb:'0 0 610 100', dotR:7 };
+
+function drawNeck(svg, g){
+  for (let f = 1; f <= FRETS; f++){
+    el('line', { class:'g-fret', x1:g.nutX + f * g.fretW, y1:g.strY0 - 10,
+      x2:g.nutX + f * g.fretW, y2:g.strY0 + 5 * g.strGap + 10 }, svg);
+  }
+  el('rect', { class:'g-nut', x:g.nutX - 3.5, y:g.strY0 - 12, width:7, height:5 * g.strGap + 24, rx:2 }, svg);
+  for (const f of [3,5,7,9,12]){
+    const cy = g.strY0 + 2.5 * g.strGap;
+    if (f === 12){
+      el('circle', { class:'g-inlay', cx:g.nutX + 11.5 * g.fretW, cy:cy - g.strGap/2, r:4 }, svg);
+      el('circle', { class:'g-inlay', cx:g.nutX + 11.5 * g.fretW, cy:cy + g.strGap/2, r:4 }, svg);
+    } else {
+      el('circle', { class:'g-inlay', cx:g.nutX + (f - 0.5) * g.fretW, cy, r:4 }, svg);
+    }
+  }
+  for (let i = 0; i < 6; i++){
+    el('line', { class:'g-string', x1:g.nutX - 14, y1:g.strY0 + i * g.strGap,
+      x2:g.nutX + FRETS * g.fretW + 10, y2:g.strY0 + i * g.strGap,
+      'stroke-width':(2.2 - i * 0.28).toFixed(2) }, svg);
+    const t = el('text', { class:'g-slbl', x:g.nutX - 22, y:g.strY0 + i * g.strGap + 3 }, svg);
+    t.textContent = NOTES[TUNING[i]];
+  }
+  for (const f of [0,3,5,7,9,12]){
+    const t = el('text', { class:'g-fnum', y:g.numY,
+      x:(f === 0 ? g.nutX - 16 : g.nutX + (f - 0.5) * g.fretW) }, svg);
+    t.textContent = f;
+  }
+}
+
+function renderFretNeck(svgId, g, membership, labelFor, tipFor, click){
+  const svg = $(svgId);
+  svg.setAttribute('viewBox', g.vb);
+  svg.innerHTML = '';
+  drawNeck(svg, g);
+  for (let i = 0; i < 6; i++){
+    for (let f = 0; f <= FRETS; f++){
+      const pc = (TUNING[i] + f) % 12;
+      const kind = membership(pc);
+      if (!kind) continue;
+      const x = (f === 0 ? g.nutX - 16 : g.nutX + (f - 0.5) * g.fretW);
+      const y = g.strY0 + i * g.strGap;
+      const gg = el('g', { class:'g-mark ' + kind, 'data-pc':pc }, svg);
+      gg.dataset.tip = tipFor(pc, 6 - i, f);
+      if (click) gg.addEventListener('click', ev => { ev.stopPropagation(); click(pc); });
+      el('circle', { class:'dot', cx:x, cy:y, r:kind === 'plain' ? g.dotR * 0.42 : g.dotR }, gg);
+      // selected chord root gets a solid extra ring
+      if (state.sel && kind === 'chordt' && pc === state.sel.root){
+        el('circle', { cx:x, cy:y, r:g.dotR + 3, fill:'none', stroke:'var(--ink)', 'stroke-width':1.4 }, gg);
+      }
+      if (state.center === pc){
+        el('circle', { class:'cring', cx:x, cy:y, r:g.dotR + 3.5 }, gg);
+      }
+      if (kind !== 'plain'){
+        const t = el('text', { x, y:y + 3 }, gg);
+        t.textContent = labelFor(pc);
+      }
+    }
+  }
+}
+
+// Label logic for the main fretboard: chord tones read against the chord
+// root, scale tones against the key tonic; the local center overrides all.
+function fretLabelFor(pc, isChordTone){
+  if (state.display === 'note') return NOTES[pc];
+  const ref = (state.center != null) ? state.center
+    : (isChordTone && state.sel) ? state.sel.root : state.keyPc;
+  const semi = (pc - ref + 12) % 12;
+  if (state.display === 'int'){
+    return (isChordTone && state.sel && state.center == null)
+      ? chordIntLabel(state.sel.type, semi) : INT_NAMES[semi];
+  }
+  return (isChordTone && state.sel && state.center == null)
+    ? chordDegLabel(state.sel.type, semi) : scaleDegLabel(state.scale, semi);
+}
+
+function renderFretboard(){
+  const selPcs = state.sel ? new Set(CHORDS[state.sel.type].pcs.map(s => (state.sel.root + s) % 12)) : new Set();
+  const scale = SCALES.find(s => s.id === state.scale);
+  const scalePcs = new Set(scale.steps.map(s => (state.keyPc + s) % 12));
+  const filt = state.filter;
+
+  const membership = pc => {
+    const ch = selPcs.has(pc), sc = scalePcs.has(pc);
+    if (filt === 'chord') return ch ? 'chordt' : null;
+    if (filt === 'scale') return sc ? 'scale' : null;
+    if (filt === 'chrom') return ch ? 'chordt' : (sc ? 'scale' : 'plain');
+    return ch ? 'chordt' : (sc ? 'scale' : null);   // both
+  };
+  renderFretNeck('fretSvg', FBG, membership,
+    pc => fretLabelFor(pc, selPcs.has(pc)),
+    (pc, str, f) => {
+      const ch = selPcs.has(pc);
+      const ref = (state.center != null) ? state.center : (ch ? state.sel.root : state.keyPc);
+      const semi = (pc - ref + 12) % 12;
+      return `<span class="t-big">${NOTES[pc]}</span> · string ${str} · fret ${f}<br>` +
+        `degree ${DEG_NAMES[semi]} · interval ${INT_NAMES[semi]}` +
+        (ch ? `<br><span class="t-mid">chord tone of ${chordName(state.sel.root, state.sel.type)}</span>` :
+              scalePcs.has(pc) ? `<br><span class="t-mid">${scale.name} of ${NOTES[state.keyPc]}</span>` : '');
+    },
+    toggleCenter);
+
+  const selStr = state.sel ? chordName(state.sel.root, state.sel.type) +
+    ' · ' + CHORDS[state.sel.type].degs : 'no chord';
+  const rel = state.center != null ? ' · degrees centered on ' + NOTES[state.center] : '';
+  $('fretInfo').textContent = 'chord: ' + selStr + '  |  scale: ' + scale.name +
+    ' of ' + NOTES[state.keyPc] + rel + '  —  click any note to re-center on it';
+}
+
+/* ============================================================
+   Scale rows (modes of major + extra scales)
+   ============================================================ */
+function buildScaleRows(){
+  for (const [boxId, group] of [['scalesBody','major'], ['extraScalesBody','extra']]){
+    const box = $(boxId);
+    box.innerHTML = '';
+    for (const sc of SCALES.filter(s => s.group === group)){
+      const row = h('div', { class:'scale-row', 'data-scale':sc.id }, box);
+      const info = h('div', { class:'scale-info' }, row);
+      const nm = h('div', { class:'sname' }, info);
+      nm.textContent = sc.name;
+      const dg = h('div', { class:'sdegs' }, info);
+      dg.textContent = sc.degs;
+      const sv = h('div', { class:'scale-svg' }, row);
+      sv.appendChild(el('svg', { viewBox:MSG.vb }));
+      row.addEventListener('click', () => { state.scale = sc.id; renderAll(); });
+    }
+  }
+}
+function renderScales(){
+  $('scalesKeyLabel').textContent = 'tonic: ' + NOTES[state.keyPc] + ' · click a row to select';
+  for (const boxId of ['scalesBody','extraScalesBody']){
+    for (const row of $(boxId).children){
+      const sc = SCALES.find(s => s.id === row.dataset.scale);
+      row.classList.toggle('on', state.scale === sc.id);
+      const svg = row.querySelector('svg');
+      svg.innerHTML = '';
+      drawNeck(svg, MSG);
+      const pcs = new Set(sc.steps.map(s => (state.keyPc + s) % 12));
+      for (let i = 0; i < 6; i++){
+        for (let f = 0; f <= FRETS; f++){
+          const pc = (TUNING[i] + f) % 12;
+          if (!pcs.has(pc)) continue;
+          const semi = (pc - state.keyPc + 12) % 12;
+          const x = (f === 0 ? MSG.nutX - 16 : MSG.nutX + (f - 0.5) * MSG.fretW);
+          const y = MSG.strY0 + i * MSG.strGap;
+          const isRoot = semi === 0;
+          const gg = el('g', { class:'g-mark ' + (isRoot ? 'chordt' : 'scale'), 'data-pc':pc }, svg);
+          gg.dataset.tip = `<span class="t-big">${NOTES[pc]}</span> · string ${6 - i} · fret ${f}<br>` +
+            `degree ${scaleDegLabel(sc.id, semi)} of ${NOTES[state.keyPc]} ${sc.name}`;
+          el('circle', { class:'dot', cx:x, cy:y, r:MSG.dotR }, gg);
+          const t = el('text', { x, y:y + 2.6 }, gg);
+          t.textContent = state.display === 'note' ? NOTES[pc]
+            : state.display === 'int' ? INT_NAMES[semi] : scaleDegLabel(sc.id, semi);
+          if (state.center === pc) el('circle', { class:'cring', cx:x, cy:y, r:MSG.dotR + 2.5 }, gg);
+        }
+      }
+    }
+  }
+}
+
+/* ============================================================
+   Chromatic neck (every note)
+   ============================================================ */
+function renderChrom(){
+  const svg = $('chromSvg');
+  svg.setAttribute('viewBox', CHG.vb);
+  svg.innerHTML = '';
+  drawNeck(svg, CHG);
+  for (let i = 0; i < 6; i++){
+    for (let f = 0; f <= FRETS; f++){
+      const pc = (TUNING[i] + f) % 12;
+      const isKey = pc === state.keyPc;
+      const ref = state.center != null ? state.center : state.keyPc;
+      const semi = (pc - ref + 12) % 12;
+      const x = (f === 0 ? CHG.nutX - 16 : CHG.nutX + (f - 0.5) * CHG.fretW);
+      const y = CHG.strY0 + i * CHG.strGap;
+      const gg = el('g', { class:'g-mark ' + (isKey ? 'chordt' : 'scale'), 'data-pc':pc }, svg);
+      gg.dataset.tip = `<span class="t-big">${NOTES[pc]}</span> · string ${6 - i} · fret ${f}<br>` +
+        `degree ${DEG_NAMES[semi]} · interval ${INT_NAMES[semi]}`;
+      gg.addEventListener('click', ev => { ev.stopPropagation(); toggleCenter(pc); });
+      el('circle', { class:'dot', cx:x, cy:y, r:CHG.dotR }, gg);
+      const t = el('text', { x, y:y + 2.8 }, gg);
+      t.textContent = state.display === 'note' ? NOTES[pc]
+        : state.display === 'int' ? INT_NAMES[semi] : DEG_NAMES[semi];
+      if (state.center === pc) el('circle', { class:'cring', cx:x, cy:y, r:CHG.dotR + 2.5 }, gg);
+    }
+  }
+}
+
+/* ============================================================
+   Header controls
+   ============================================================ */
+function buildControls(){
+  const disp = [['deg','DEGREES'],['note','NOTES'],['int','INTERVALS']];
+  for (const [id, label] of disp){
+    const b = h('button', {}, $('displayRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => setDisplay(id));
+  }
+  for (let i = 0; i < 12; i++){
+    const b = h('button', { class:'chip', 'data-key':i }, $('keyRow'));
+    b.textContent = NOTES[i];
+    b.addEventListener('click', () => selectKey(i, state.keyMode));
+  }
+  for (const [m, label] of [['major','MAJOR'],['minor','MINOR']]){
+    const b = h('button', {}, $('keyModeRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => selectKey(state.keyPc, m));
+  }
+  for (let i = 0; i < 12; i++){
+    const b = h('button', { class:'chip', 'data-root':i }, $('rootRow'));
+    b.textContent = NOTES[i];
+    b.addEventListener('click', () => { state.root = i; renderAll(); });
+  }
+  for (const [m, label] of [['names','NAMES'],['romans','ROMANS'],['functions','FUNCTIONS']]){
+    const b = h('button', {}, $('cofModeRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => { state.cofMode = m; renderAll(); });
+  }
+  for (const [f, label] of [['chord','CHORD'],['scale','SCALE'],['both','BOTH'],['chrom','ALL']]){
+    const b = h('button', {}, $('fretFilterRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => { state.filter = f; renderAll(); });
+  }
+  $('clearCenter').addEventListener('click', () => { state.center = null; renderAll(); });
+}
+function renderHeader(){
+  [...$('displayRow').children].forEach((b, i) =>
+    b.classList.toggle('on', ['deg','note','int'][i] === state.display));
+  [...$('keyRow').children].forEach((b, i) =>
+    b.classList.toggle('on', i === state.keyPc));
+  [...$('keyModeRow').children].forEach((b, i) =>
+    b.classList.toggle('on', ['major','minor'][i] === state.keyMode));
+  [...$('rootRow').children].forEach((b, i) =>
+    b.classList.toggle('on', i === state.root));
+  [...$('cofModeRow').children].forEach((b, i) =>
+    b.classList.toggle('on', ['names','romans','functions'][i] === state.cofMode));
+  [...$('fretFilterRow').children].forEach((b, i) =>
+    b.classList.toggle('on', ['chord','scale','both','chrom'][i] === state.filter));
+  const chip = $('centerChip');
+  if (state.center == null){
+    chip.textContent = '—';
+    chip.classList.remove('set');
+  } else {
+    const semi = (state.center - state.keyPc + 12) % 12;
+    const rows = state.keyMode === 'major' ? MAJOR_KEY : MINOR_KEY;
+    const r = rows.find(r => r.deg === semi);
+    chip.textContent = NOTES[state.center] + (r ? ' = ' + r.rn : '');
+    chip.classList.add('set');
+  }
+}
+
+/* ============================================================
+   Root render + keyboard + init
+   ============================================================ */
+function renderAll(){
+  renderHeader();
+  renderMovable();
+  renderBasic();
+  renderFormula();
+  renderKeyTables();
+  renderCoF();
+  renderFretboard();
+  renderScales();
+  renderChrom();
+  refreshPcEls();
+  save();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
+    e.preventDefault();
+    const d = e.key === 'ArrowRight' ? 1 : -1;
+    selectKey((state.keyPc + d + 12) % 12, state.keyMode);
+  } else if (e.key === 'd' || e.key === 'D'){
+    setDisplay('deg');
+  } else if (e.key === 'n' || e.key === 'N'){
+    setDisplay('note');
+  } else if (e.key === 'i' || e.key === 'I'){
+    setDisplay('int');
+  } else if (e.key === 'Escape'){
+    state.center = null;
+    renderAll();
+  } else if (e.key >= '1' && e.key <= '7'){
+    const rows = state.keyMode === 'major' ? MAJOR_KEY : MINOR_KEY;
+    const r = rows[+e.key - 1];
+    selectChord((state.keyPc + r.deg) % 12, r.s7);
+  }
+});
+
+buildControls();
+buildMovable();
+buildBasic();
+buildFormula();
+buildKeyTables();
+buildScaleRows();
+renderAll();
+
+// Exposed for the test harness.
+window.__APP = { state, selectChord, selectKey, toggleCenter, setDisplay, renderAll,
+  chordName, keyChords, fretLabelFor };
+</script>
+</body>
+</html>
