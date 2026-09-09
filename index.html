@@ -39,9 +39,9 @@ header.top{
   padding:14px 18px 10px;border-bottom:2px solid var(--ink);
 }
 .brand h1{font-size:22px;font-weight:800;letter-spacing:.06em}
-.brand p{font-size:11.5px;color:var(--mid);margin-top:2px}
 .ctrl-block{display:flex;flex-direction:column;gap:4px}
 .ctrl-block .lbl{font-size:9.5px;letter-spacing:.16em;font-weight:700;color:var(--mid)}
+.ctrl-block .sub{font-size:9.5px;color:var(--mid)}
 .seg{display:flex;gap:0}
 .seg button{
   border:1px solid var(--ink);border-right-width:0;background:transparent;
@@ -79,6 +79,7 @@ main.poster{
 .bar .seg button:hover{background:#3a362c}
 .bar .seg button.on{background:var(--paper);color:var(--selbg)}
 .bar .bar-aux{font-size:10px;letter-spacing:.06em;font-weight:600;color:#cfc9b8}
+.bar .bar-mono{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.06em}
 .hint{font-size:10.5px;color:var(--mid);line-height:1.45;padding:6px 8px;border-top:1px solid var(--line)}
 
 /* ---------- generic small tables ---------- */
@@ -121,17 +122,18 @@ table.frm tr.on:hover td{background:var(--selbg)}
 #cofSvg{display:block;width:100%;max-width:420px;height:auto;margin:0 auto}
 #cofSvg .seg-outline{fill:none;stroke:var(--ink);stroke-width:1.2}
 #cofSvg .cof-seg{fill:var(--paper);stroke:var(--ink);stroke-width:1.2;cursor:pointer}
-#cofSvg .cof-seg:hover{fill:var(--wash)}
+#cofSvg .cof-seg:hover{fill:#dcd5c2}
 #cofSvg .cof-seg.min{fill:var(--paper2)}
+#cofSvg .cof-seg.dimg{fill:var(--wash)}
 #cofSvg .cof-seg.on{fill:var(--selbg)}
 #cofSvg .cof-name{font-size:17px;font-weight:800;pointer-events:none}
 #cofSvg .cof-name.min-name{font-size:11px;font-weight:700}
 #cofSvg .cof-roman{font-size:9px;font-weight:600;pointer-events:none}
 #cofSvg .cof-sig{font-size:8.5px;pointer-events:none}
 #cofSvg .cof-seg.on text{fill:var(--selfg)}
-#cofSvg .cof-dim{font-size:7.5px;fill:var(--mid);pointer-events:none}
-#cofSvg .cof-center-big{font-size:30px;font-weight:800}
-#cofSvg .cof-center-sub{font-size:10.5px;font-weight:600;fill:var(--mid)}
+#cofSvg .cof-dim2{font-size:9px;font-weight:700;fill:var(--ink);pointer-events:none}
+#cofSvg .cof-center-big{font-size:21px;font-weight:800}
+#cofSvg .cof-center-sub{font-size:8.5px;font-weight:600;fill:var(--mid)}
 #cofSvg .cof-center-deg{font-size:12px;font-weight:700}
 
 /* ---------- key chord tables ---------- */
@@ -149,7 +151,7 @@ table.keys td.kc:hover{background:var(--wash)}
 table.keys td.kc.on{background:var(--selbg);color:var(--selfg)}
 table.keys td.kc.on small{color:#cfc9b8}
 
-/* ---------- fretboard & scale diagrams ---------- */
+/* ---------- fretboard ---------- */
 .fretbox{padding:8px 8px 2px}
 #fretSvg,#chromSvg{display:block;width:100%;height:auto}
 .g-fret{stroke:var(--line);stroke-width:1.4}
@@ -169,24 +171,28 @@ table.keys td.kc.on small{color:#cfc9b8}
 .g-mark circle.cring{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.5}
 .g-mark:hover circle.dot{stroke-width:2.4}
 .g-mark text{font-size:9.5px;font-weight:700;text-anchor:middle;pointer-events:none}
-.scale-row{display:grid;grid-template-columns:132px 1fr;gap:0;border-top:1px solid var(--line);cursor:pointer}
-.scale-row:first-child{border-top:0}
-.scale-row:hover{background:var(--wash)}
-.scale-row.on{background:#fffef7}
-.scale-info{padding:7px 8px;border-right:1px solid var(--line)}
-.scale-info .sname{font-size:12px;font-weight:800}
-.scale-info .sdegs{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;color:var(--mid);margin-top:2px}
-.scale-row.on .sdegs{color:var(--ink)}
-.scale-svg{padding:4px 6px}
-.scale-svg svg{display:block;width:100%;height:auto}
+.scale-tabs{
+  display:flex;flex-wrap:wrap;align-items:center;
+  padding:5px 8px;border-bottom:1px solid var(--line);
+}
+.scale-tabs button{
+  border:1px solid var(--ink);border-right-width:0;background:transparent;
+  padding:2.5px 8px;font-size:9.5px;font-weight:700;letter-spacing:.07em;cursor:pointer;
+}
+.scale-tabs button:last-child{border-right-width:1px}
+.scale-tabs button:hover{background:var(--wash)}
+.scale-tabs button.on{background:var(--selbg);color:var(--selfg)}
+.scale-tabs button[data-scale="harmminor"]{margin-left:12px}
 
 /* ---------- cross-highlight ---------- */
 [data-pc].xhl{box-shadow:inset 0 0 0 2px var(--ink)}
 g[data-pc].xhl circle.dot{stroke-width:2.8}
 g[data-pc].xhl rect,g[data-pc].xhl path{stroke-width:2.4}
 text[data-pc].xhl{fill:#fff;background:var(--ink)}
-td[data-pc].xhl,span[data-pc].xhl,button[data-pc].xhl{background:#fffef7}
-tr[data-pc] td{}
+td[data-pc].xhl,button[data-pc].xhl{background:#fffef7}
+/* note pills (formula NOTES column): a clean pill instead of a crooked box */
+span[data-pc]{display:inline-block;padding:0 3px;margin-right:2px;border-radius:2px}
+span[data-pc].xhl{background:var(--ink);color:var(--selfg);box-shadow:none}
 
 /* ---------- tooltip ---------- */
 #tip{
@@ -216,11 +222,11 @@ footer.info{
 <header class="top">
   <div class="brand">
     <h1>GUITAR CHART</h1>
-    <p>interactive moveable-chord &amp; harmony reference · one model, many synced views</p>
   </div>
   <div class="ctrl-block">
     <span class="lbl">SHOW</span>
     <div class="seg" id="displayRow"></div>
+    <span class="sub">label notes as degrees, note names or intervals</span>
   </div>
   <div class="ctrl-block">
     <span class="lbl">KEY</span>
@@ -228,6 +234,7 @@ footer.info{
       <div class="chips" id="keyRow"></div>
       <div class="seg" id="keyModeRow"></div>
     </div>
+    <span class="sub">drives the circle of fifths, the key-chord tables and the fretboard scale</span>
   </div>
   <div class="ctrl-block">
     <span class="lbl">LOCAL CENTER</span>
@@ -235,6 +242,7 @@ footer.info{
       <span class="center-chip" id="centerChip">—</span>
       <button class="chip" id="clearCenter">clear</button>
     </div>
+    <span class="sub">click any note on a neck to re-read all degrees from it</span>
   </div>
 </header>
 
@@ -299,20 +307,12 @@ footer.info{
     <section class="panel">
       <div class="bar">
         <span>FRETBOARD</span>
+        <span class="bar-aux bar-mono" id="fretScaleHdr"></span>
         <div class="seg" id="fretFilterRow"></div>
       </div>
+      <div class="scale-tabs" id="scaleTabs"></div>
       <div class="fretbox"><svg id="fretSvg" viewBox="0 0 790 192" role="img" aria-label="Guitar fretboard"></svg></div>
       <p class="hint" id="fretInfo"></p>
-    </section>
-
-    <section class="panel">
-      <div class="bar"><span>SCALES FROM MAJOR</span><span class="bar-aux" id="scalesKeyLabel"></span></div>
-      <div id="scalesBody"></div>
-    </section>
-
-    <section class="panel">
-      <div class="bar"><span>MORE SCALES</span></div>
-      <div id="extraScalesBody"></div>
     </section>
 
     <section class="panel">
@@ -325,7 +325,6 @@ footer.info{
 
 <footer class="info">
   <span>Adapted from the printed guitar poster by mtprojects.space (CC BY-NC) · interactive rebuild</span>
-  <span>HTML + CSS + vanilla JS + SVG · no dependencies · single file</span>
 </footer>
 
 <div id="tip" hidden></div>
@@ -455,18 +454,19 @@ const BASIC = {
   'G': { maj:  {f:[3,2,0,0,0,3]},   maj7:{f:[3,2,0,0,0,2]},   '7':{f:[3,2,0,0,0,1]},   min:{f:[3,5,5,3,3,3], barre:[6,1,3]}, min7:{f:[3,5,3,3,3,3], barre:[6,1,3]} }
 };
 
-/* ---------- scales ---------- */
+/* ---------- scales ----------
+   `tab` is the short label used by the fretboard scale tabs. */
 const SCALES = [
-  { id:'ionian',    name:'Ionian',          group:'major', steps:[0,2,4,5,7,9,11],  degs:'1 2 3 4 5 6 7' },
-  { id:'dorian',    name:'Dorian',          group:'major', steps:[0,2,3,5,7,9,10],  degs:'1 2 ♭3 4 5 6 ♭7' },
-  { id:'phrygian',  name:'Phrygian',        group:'major', steps:[0,1,3,5,7,8,10],  degs:'1 ♭2 ♭3 4 5 ♭6 ♭7' },
-  { id:'lydian',    name:'Lydian',          group:'major', steps:[0,2,4,6,7,9,11],  degs:'1 2 3 ♯4 5 6 7' },
-  { id:'mixolydian',name:'Mixolydian',      group:'major', steps:[0,2,4,5,7,9,10],  degs:'1 2 3 4 5 6 ♭7' },
-  { id:'aeolian',   name:'Aeolian',         group:'major', steps:[0,2,3,5,7,8,10],  degs:'1 2 ♭3 4 5 ♭6 ♭7' },
-  { id:'locrian',   name:'Locrian',         group:'major', steps:[0,1,3,5,6,8,10],  degs:'1 ♭2 ♭3 4 ♭5 ♭6 ♭7' },
-  { id:'harmminor', name:'Harmonic Minor',  group:'extra', steps:[0,2,3,5,7,8,11],  degs:'1 2 ♭3 4 5 ♭6 7' },
-  { id:'gypsy',     name:'Hungarian Gypsy', group:'extra', steps:[0,2,3,6,7,8,11],  degs:'1 2 ♭3 ♯4 5 ♭6 7' },
-  { id:'acoustic',  name:'Acoustic Scale',  group:'extra', steps:[0,2,4,6,7,9,10],  degs:'1 2 3 ♯4 5 6 ♭7' }
+  { id:'ionian',    name:'Ionian',          tab:'IONIAN',     group:'major', steps:[0,2,4,5,7,9,11],  degs:'1 2 3 4 5 6 7' },
+  { id:'dorian',    name:'Dorian',          tab:'DORIAN',     group:'major', steps:[0,2,3,5,7,9,10],  degs:'1 2 ♭3 4 5 6 ♭7' },
+  { id:'phrygian',  name:'Phrygian',        tab:'PHRYGIAN',   group:'major', steps:[0,1,3,5,7,8,10],  degs:'1 ♭2 ♭3 4 5 ♭6 ♭7' },
+  { id:'lydian',    name:'Lydian',          tab:'LYDIAN',     group:'major', steps:[0,2,4,6,7,9,11],  degs:'1 2 3 ♯4 5 6 7' },
+  { id:'mixolydian',name:'Mixolydian',      tab:'MIXOLYDIAN', group:'major', steps:[0,2,4,5,7,9,10],  degs:'1 2 3 4 5 6 ♭7' },
+  { id:'aeolian',   name:'Aeolian',         tab:'AEOLIAN',    group:'major', steps:[0,2,3,5,7,8,10],  degs:'1 2 ♭3 4 5 ♭6 ♭7' },
+  { id:'locrian',   name:'Locrian',         tab:'LOCRIAN',    group:'major', steps:[0,1,3,5,6,8,10],  degs:'1 ♭2 ♭3 4 ♭5 ♭6 ♭7' },
+  { id:'harmminor', name:'Harmonic Minor',  tab:'HARM MINOR', group:'extra', steps:[0,2,3,5,7,8,11],  degs:'1 2 ♭3 4 5 ♭6 7' },
+  { id:'gypsy',     name:'Hungarian Gypsy', tab:'GYPSY',      group:'extra', steps:[0,2,3,6,7,8,11],  degs:'1 2 ♭3 ♯4 5 ♭6 7' },
+  { id:'acoustic',  name:'Acoustic Scale',  tab:'ACOUSTIC',   group:'extra', steps:[0,2,4,6,7,9,10],  degs:'1 2 3 ♯4 5 6 ♭7' }
 ];
 // step->label map per scale (so ♯4 / ♭5 / maj-7 contexts read correctly).
 const SCALE_LABELS = {};
@@ -735,7 +735,14 @@ function selectChord(rootPc, typeId, keepRoot){
 }
 function selectKey(pc, mode){
   state.keyPc = pc;
-  state.keyMode = mode || state.keyMode;
+  if (mode && mode !== state.keyMode){
+    state.keyMode = mode;
+    // follow the plain scale of the new mode (ionian <-> aeolian);
+    // a deliberately chosen exotic scale is kept
+    if (state.scale === 'ionian' || state.scale === 'aeolian'){
+      state.scale = mode === 'minor' ? 'aeolian' : 'ionian';
+    }
+  }
   renderAll();
 }
 function toggleCenter(pc){
@@ -752,8 +759,13 @@ const DG = { w:104, strX0:16, strGap:15, top:24, rowH:23 };
 function chordDiagram(typeId, frets, barre, base, opts){
   // frets: relative or absolute array (strings 6..1); base = absolute fret of rel 0
   const o = opts || {};
-  const maxRel = Math.max(...frets.filter(f => f >= 0));
-  const rows = Math.max(4, maxRel + 1);
+  const used = frets.filter(f => f >= 0);
+  const minU = Math.min(...used), maxU = Math.max(...used);
+  // compact grid: the top line sits right above the highest played fret,
+  // no empty leading rows; 4 rows minimum keeps most diagrams uniform
+  const firstRow = minU > 0 ? minU : 0;
+  const rows = Math.max(4, maxU - firstRow + 1);
+  const fy = f => DG.top + (f - firstRow) * DG.rowH + DG.rowH / 2;
   const width = DG.w, height = DG.top + rows * DG.rowH + 8;
   const svg = el('svg', { viewBox:`0 0 ${width} ${height}`, 'data-chord':typeId });
 
@@ -762,12 +774,13 @@ function chordDiagram(typeId, frets, barre, base, opts){
     el('line', { x1:DG.strX0 - 6, y1:DG.top + r * DG.rowH, x2:DG.strX0 + 5 * DG.strGap + 6,
       y2:DG.top + r * DG.rowH, class:'g-fret', 'stroke-width':1.1 }, svg);
   }
-  // nut or position label
-  if (base === 0 && !o.nutAt !== false){
+  // nut or position label (the top line is fret `base + firstRow`)
+  const topFret = base + firstRow;
+  if (topFret === 0){
     el('rect', { x:DG.strX0 - 7, y:DG.top - 3.4, width:5 * DG.strGap + 12, height:3.4, class:'g-nut' }, svg);
   } else {
     const t = el('text', { x:DG.strX0 - 10, y:DG.top + DG.rowH * 0.5 + 3, class:'g-slbl' }, svg);
-    t.textContent = base + 'fr';
+    t.textContent = topFret + 'fr';
   }
   // strings (low E on the left) + open/mute markers
   for (let i = 0; i < 6; i++){
@@ -780,7 +793,7 @@ function chordDiagram(typeId, frets, barre, base, opts){
   if (barre){
     const from = barre[0], to = barre[1], rel = barre[2] || 0;
     const i0 = 6 - from, i1 = 6 - to;
-    const y = DG.top + rel * DG.rowH + DG.rowH / 2;
+    const y = fy(rel);
     const barreAttrs = { x:DG.strX0 + i0 * DG.strGap - 6.5, y:y - 6.5,
       width:(i1 - i0) * DG.strGap + 13, height:13, rx:6.5,
       fill:'var(--ink)', opacity:.92, class:'barre' };
@@ -795,7 +808,7 @@ function chordDiagram(typeId, frets, barre, base, opts){
     const pc = (TUNING[i] + base + f) % 12;
     const semi = (pc - o.rootPc + 12) % 12;
     const x = DG.strX0 + i * DG.strGap;
-    const y = DG.top + f * DG.rowH + DG.rowH / 2;
+    const y = fy(f);
     const isRoot = semi === 0;
     const g = el('g', { class:'cdot', 'data-pc':pc }, svg);
     el('circle', { cx:x, cy:y, r:7.6, class:'dot',
@@ -1027,6 +1040,11 @@ function cofText(svg, r, angDeg, str, cls, size){
   t.textContent = str;
   return t;
 }
+// Ring labels, relative to the selected key.
+function cofRoman(pc){ return COF_ROMAN[(pc - state.keyPc + 12) % 12]; }
+function cofFn(pc){ return COF_FN[(pc - state.keyPc + 12) % 12] || '·'; }
+function cofLower(r){ return r.startsWith('♭') ? '♭' + r.slice(1).toLowerCase() : r.toLowerCase(); }
+
 function renderCoF(){
   const svg = $('cofSvg');
   svg.innerHTML = '';
@@ -1035,56 +1053,67 @@ function renderCoF(){
     const seg = CIRCLE[i];
     const c = -90 + i * 30;
     const a0 = c - 15 + GAP, a1 = c + 15 - GAP;
-    const isMajSel = state.keyPc === seg.pc && state.keyMode === 'major';
-    // outer ring: major keys
-    const p = el('path', { d:cofSegPath(120, 178, a0, a1), class:'cof-seg' + (isMajSel ? ' on' : ''),
+    const minPc = (seg.pc + 9) % 12;     // relative minor of the major above
+    const dimPc = (seg.pc + 11) % 12;    // vii° of the major above
+    const majSel = state.keyPc === seg.pc && state.keyMode === 'major';
+    const minSel = state.keyPc === minPc && state.keyMode === 'minor';
+    const dimSel = !!(state.sel && state.sel.type === 'dim' && state.sel.root === dimPc);
+
+    // outer ring: major chords
+    const po = el('path', { d:cofSegPath(124, 178, a0, a1), class:'cof-seg' + (majSel ? ' on' : ''),
       'data-pc':seg.pc }, svg);
-    p.addEventListener('click', () => selectKey(seg.pc, 'major'));
-    p.dataset.tip = `<span class="t-big">${seg.maj} major</span><br>` +
-      `key signature: ${seg.sig || 'none'}<br><span class="t-mid">relative minor: ${seg.min}m</span>`;
-    // ring outlines
-    el('circle', { cx:COFC.cx, cy:COFC.cy, r:178, class:'seg-outline' }, svg);
-    el('circle', { cx:COFC.cx, cy:COFC.cy, r:120, class:'seg-outline' }, svg);
-    el('circle', { cx:COFC.cx, cy:COFC.cy, r:68,  class:'seg-outline' }, svg);
-  }
-  for (let i = 0; i < 12; i++){
-    const seg = CIRCLE[i];
-    const c = -90 + i * 30;
-    const a0 = c - 15 + GAP, a1 = c + 15 - GAP;
-    const minPc = (seg.pc + 9) % 12;
-    const isMinSel = state.keyPc === minPc && state.keyMode === 'minor';
-    const isMajSel = state.keyPc === seg.pc && state.keyMode === 'major';
-    // middle ring: relative minors
-    const p = el('path', { d:cofSegPath(68, 118, a0, a1), class:'cof-seg min' + (isMinSel ? ' on' : ''),
+    po.addEventListener('click', () => selectKey(seg.pc, 'major'));
+    po.dataset.tip = `<span class="t-big">${seg.maj} major</span><br>` +
+      `key signature: ${seg.sig || 'none'}<br>` +
+      `<span class="t-mid">relative minor: ${seg.min}m · vii°: ${NOTES[dimPc]}°</span>`;
+
+    // middle ring: the relative minor chord
+    const pm = el('path', { d:cofSegPath(72, 122, a0, a1), class:'cof-seg min' + (minSel ? ' on' : ''),
       'data-pc':minPc }, svg);
-    p.addEventListener('click', () => selectKey(minPc, 'minor'));
-    p.dataset.tip = `<span class="t-big">${seg.min} minor</span><br>` +
-      `relative minor of ${seg.maj} major<br><span class="t-mid">vii°: ${NOTES[(seg.pc + 11) % 12]}°</span>`;
-    // innermost labels: the vii° chord of each major key
-    const dim = el('text', { class:'cof-dim', 'text-anchor':'middle' }, svg);
-    dim.setAttribute('x', COFC.cx + 78 * Math.cos(c * Math.PI/180));
-    dim.setAttribute('y', COFC.cy + 78 * Math.sin(c * Math.PI/180) + 2.5);
-    dim.textContent = NOTES[(seg.pc + 11) % 12] + '°';
-    // labels for both rings + key signature
-    const [big, small] = (
-      state.cofMode === 'names'     ? [seg.maj, seg.sig] :
-      state.cofMode === 'romans'    ? [COF_ROMAN[(seg.pc - state.keyPc + 12) % 12], seg.maj] :
-                                      [COF_FN[(seg.pc - state.keyPc + 12) % 12] || '·', seg.maj]
-    );
-    const mt = cofText(svg, 149, c, big, 'cof-name', isMajSel ? 15 : 17);
-    mt.setAttribute('fill', isMajSel ? 'var(--selfg)' : 'var(--ink)');
-    cofText(svg, 131, c, small, 'cof-sig', 8.5);
-    const mn = cofText(svg, 93, c, seg.min, 'cof-name min-name', isMinSel ? 10 : 11);
-    if (isMinSel) mn.setAttribute('fill', 'var(--selfg)');
+    pm.addEventListener('click', () => selectKey(minPc, 'minor'));
+    pm.dataset.tip = `<span class="t-big">${seg.min}m</span><br>` +
+      `relative minor of ${seg.maj} major<br><span class="t-mid">parallel major: ${seg.maj}</span>`;
+
+    // inner ring: the diminished chord of this sector
+    const pd = el('path', { d:cofSegPath(40, 70, a0, a1), class:'cof-seg dimg' + (dimSel ? ' on' : ''),
+      'data-pc':dimPc }, svg);
+    pd.addEventListener('click', () => selectChord(dimPc, 'dim'));
+    pd.dataset.tip = `<span class="t-big">${NOTES[dimPc]}°</span><br>` +
+      `vii° of ${seg.maj} major<br><span class="t-mid">click to select the chord</span>`;
+
+    // ring outlines
+    for (const r of [178, 124, 72, 40]){
+      el('circle', { cx:COFC.cx, cy:COFC.cy, r, class:'seg-outline' }, svg);
+    }
+
+    // all three rings follow the label mode
+    let big, sub, mid, inn;
+    if (state.cofMode === 'names'){
+      big = seg.maj;                    sub = seg.sig;
+      mid = seg.min + 'm';              inn = NOTES[dimPc] + '°';
+    } else if (state.cofMode === 'romans'){
+      big = cofRoman(seg.pc);           sub = seg.maj;
+      mid = cofLower(cofRoman(minPc));  inn = cofLower(cofRoman(dimPc)) + '°';
+    } else {
+      big = cofFn(seg.pc);              sub = seg.maj;
+      mid = cofFn(minPc);               inn = cofFn(dimPc);
+    }
+    const mt = cofText(svg, 151, c, big, 'cof-name', majSel ? 15 : 17);
+    if (majSel) mt.setAttribute('fill', 'var(--selfg)');
+    cofText(svg, 135, c, sub, 'cof-sig', 8.5);
+    const mn = cofText(svg, 97, c, mid, 'cof-name min-name', minSel ? 10 : 11);
+    if (minSel) mn.setAttribute('fill', 'var(--selfg)');
+    const dn = cofText(svg, 55, c, inn, 'cof-dim2', dimSel ? 10 : 9.5);
+    if (dimSel) dn.setAttribute('fill', 'var(--selfg)');
   }
-  // center: the selected key
-  const seg = CIRCLE.find(s => s.pc === state.keyPc) || CIRCLE[0];
-  const big = el('text', { x:COFC.cx, y:COFC.cy - 10, class:'cof-center-big', 'text-anchor':'middle' }, svg);
+  // center hub: the selected key
+  const seg0 = CIRCLE.find(s => s.pc === state.keyPc) || CIRCLE[0];
+  const big = el('text', { x:COFC.cx, y:COFC.cy - 4, class:'cof-center-big', 'text-anchor':'middle' }, svg);
   big.textContent = NOTES[state.keyPc];
-  const sub = el('text', { x:COFC.cx, y:COFC.cy + 14, class:'cof-center-sub', 'text-anchor':'middle' }, svg);
-  sub.textContent = state.keyMode + (seg.sig ? ' · ' + seg.sig : '');
-  $('cofHint').textContent = 'Clockwise = up a perfect fifth. Outer ring: major keys · middle ring: relative minors · ' +
-    'innermost: the vii° chord of each major key. Click any segment to set the key.';
+  const sub = el('text', { x:COFC.cx, y:COFC.cy + 13, class:'cof-center-sub', 'text-anchor':'middle' }, svg);
+  sub.textContent = state.keyMode + (seg0.sig ? ' · ' + seg0.sig : '');
+  $('cofHint').textContent = 'Clockwise = up a perfect fifth. Each sector: the major chord (outer), its relative minor ' +
+    '(middle) and its vii° diminished chord (inner). Click a ring to set the key or select the chord; tabs change the labels.';
 }
 
 /* ============================================================
@@ -1092,7 +1121,6 @@ function renderCoF(){
    ============================================================ */
 const FBG  = { nutX:36, fretW:59, strY0:30, strGap:26, numY:184, vb:'0 0 790 192', dotR:10.5 };
 const CHG  = { nutX:26, fretW:54, strY0:20, strGap:20, numY:144, vb:'0 0 700 152', dotR:8 };
-const MSG  = { nutX:22, fretW:47, strY0:12, strGap:14, numY:95,  vb:'0 0 610 100', dotR:7 };
 
 function drawNeck(svg, g){
   for (let f = 1; f <= FRETS; f++){
@@ -1148,25 +1176,28 @@ function renderFretNeck(svgId, g, membership, labelFor, tipFor, click){
       }
       if (kind !== 'plain'){
         const t = el('text', { x, y:y + 3 }, gg);
-        t.textContent = labelFor(pc);
+        t.textContent = labelFor(pc, kind);
       }
     }
   }
 }
 
 // Label logic for the main fretboard: chord tones read against the chord
-// root, scale tones against the key tonic; the local center overrides all.
+// root, scale tones against the key tonic; the local center overrides all
+// with plain degrees from itself.
 function fretLabelFor(pc, isChordTone){
   if (state.display === 'note') return NOTES[pc];
-  const ref = (state.center != null) ? state.center
-    : (isChordTone && state.sel) ? state.sel.root : state.keyPc;
-  const semi = (pc - ref + 12) % 12;
-  if (state.display === 'int'){
-    return (isChordTone && state.sel && state.center == null)
-      ? chordIntLabel(state.sel.type, semi) : INT_NAMES[semi];
+  if (state.center != null){
+    const semi = (pc - state.center + 12) % 12;
+    return state.display === 'int' ? INT_NAMES[semi] : DEG_NAMES[semi];
   }
-  return (isChordTone && state.sel && state.center == null)
-    ? chordDegLabel(state.sel.type, semi) : scaleDegLabel(state.scale, semi);
+  if (isChordTone && state.sel){
+    const semi = (pc - state.sel.root + 12) % 12;
+    return state.display === 'int'
+      ? chordIntLabel(state.sel.type, semi) : chordDegLabel(state.sel.type, semi);
+  }
+  const semi = (pc - state.keyPc + 12) % 12;
+  return state.display === 'int' ? INT_NAMES[semi] : scaleDegLabel(state.scale, semi);
 }
 
 function renderFretboard(){
@@ -1174,6 +1205,11 @@ function renderFretboard(){
   const scale = SCALES.find(s => s.id === state.scale);
   const scalePcs = new Set(scale.steps.map(s => (state.keyPc + s) % 12));
   const filt = state.filter;
+
+  // scale tabs + the scale formula in the section header
+  [...$('scaleTabs').children].forEach(b =>
+    b.classList.toggle('on', b.dataset.scale === state.scale));
+  $('fretScaleHdr').textContent = scale.degs;
 
   const membership = pc => {
     const ch = selPcs.has(pc), sc = scalePcs.has(pc);
@@ -1183,7 +1219,9 @@ function renderFretboard(){
     return ch ? 'chordt' : (sc ? 'scale' : null);   // both
   };
   renderFretNeck('fretSvg', FBG, membership,
-    pc => fretLabelFor(pc, selPcs.has(pc)),
+    // the label follows the mark's resolved kind, so a scale-only view
+    // reads scale degrees even where the note is also a chord tone
+    (pc, kind) => fretLabelFor(pc, kind === 'chordt' || kind === 'both'),
     (pc, str, f) => {
       const ch = selPcs.has(pc);
       const ref = (state.center != null) ? state.center : (ch ? state.sel.root : state.keyPc);
@@ -1200,58 +1238,6 @@ function renderFretboard(){
   const rel = state.center != null ? ' · degrees centered on ' + NOTES[state.center] : '';
   $('fretInfo').textContent = 'chord: ' + selStr + '  |  scale: ' + scale.name +
     ' of ' + NOTES[state.keyPc] + rel + '  —  click any note to re-center on it';
-}
-
-/* ============================================================
-   Scale rows (modes of major + extra scales)
-   ============================================================ */
-function buildScaleRows(){
-  for (const [boxId, group] of [['scalesBody','major'], ['extraScalesBody','extra']]){
-    const box = $(boxId);
-    box.innerHTML = '';
-    for (const sc of SCALES.filter(s => s.group === group)){
-      const row = h('div', { class:'scale-row', 'data-scale':sc.id }, box);
-      const info = h('div', { class:'scale-info' }, row);
-      const nm = h('div', { class:'sname' }, info);
-      nm.textContent = sc.name;
-      const dg = h('div', { class:'sdegs' }, info);
-      dg.textContent = sc.degs;
-      const sv = h('div', { class:'scale-svg' }, row);
-      sv.appendChild(el('svg', { viewBox:MSG.vb }));
-      row.addEventListener('click', () => { state.scale = sc.id; renderAll(); });
-    }
-  }
-}
-function renderScales(){
-  $('scalesKeyLabel').textContent = 'tonic: ' + NOTES[state.keyPc] + ' · click a row to select';
-  for (const boxId of ['scalesBody','extraScalesBody']){
-    for (const row of $(boxId).children){
-      const sc = SCALES.find(s => s.id === row.dataset.scale);
-      row.classList.toggle('on', state.scale === sc.id);
-      const svg = row.querySelector('svg');
-      svg.innerHTML = '';
-      drawNeck(svg, MSG);
-      const pcs = new Set(sc.steps.map(s => (state.keyPc + s) % 12));
-      for (let i = 0; i < 6; i++){
-        for (let f = 0; f <= FRETS; f++){
-          const pc = (TUNING[i] + f) % 12;
-          if (!pcs.has(pc)) continue;
-          const semi = (pc - state.keyPc + 12) % 12;
-          const x = (f === 0 ? MSG.nutX - 16 : MSG.nutX + (f - 0.5) * MSG.fretW);
-          const y = MSG.strY0 + i * MSG.strGap;
-          const isRoot = semi === 0;
-          const gg = el('g', { class:'g-mark ' + (isRoot ? 'chordt' : 'scale'), 'data-pc':pc }, svg);
-          gg.dataset.tip = `<span class="t-big">${NOTES[pc]}</span> · string ${6 - i} · fret ${f}<br>` +
-            `degree ${scaleDegLabel(sc.id, semi)} of ${NOTES[state.keyPc]} ${sc.name}`;
-          el('circle', { class:'dot', cx:x, cy:y, r:MSG.dotR }, gg);
-          const t = el('text', { x, y:y + 2.6 }, gg);
-          t.textContent = state.display === 'note' ? NOTES[pc]
-            : state.display === 'int' ? INT_NAMES[semi] : scaleDegLabel(sc.id, semi);
-          if (state.center === pc) el('circle', { class:'cring', cx:x, cy:y, r:MSG.dotR + 2.5 }, gg);
-        }
-      }
-    }
-  }
 }
 
 /* ============================================================
@@ -1318,6 +1304,11 @@ function buildControls(){
     b.textContent = label;
     b.addEventListener('click', () => { state.filter = f; renderAll(); });
   }
+  for (const sc of SCALES){
+    const b = h('button', { 'data-scale':sc.id }, $('scaleTabs'));
+    b.textContent = sc.tab;
+    b.addEventListener('click', () => { state.scale = sc.id; renderAll(); });
+  }
   $('clearCenter').addEventListener('click', () => { state.center = null; renderAll(); });
 }
 function renderHeader(){
@@ -1357,7 +1348,6 @@ function renderAll(){
   renderKeyTables();
   renderCoF();
   renderFretboard();
-  renderScales();
   renderChrom();
   refreshPcEls();
   save();
@@ -1389,7 +1379,6 @@ buildMovable();
 buildBasic();
 buildFormula();
 buildKeyTables();
-buildScaleRows();
 renderAll();
 
 // Exposed for the test harness.

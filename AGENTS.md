@@ -4,10 +4,11 @@
 
 `index.html` — a single self-contained interactive rebuild of a printed guitar
 reference poster (moveable chords, basic chords, chord formulas, circle of
-fifths, key chord tables, fretboard, scales). HTML + CSS + vanilla JS + SVG,
-**no build step, no dependencies**. All UI text and code comments are in
-English. Visual language: vintage printed chart — off-white paper (`--paper`),
-thin black rules, dense tables, black header bars, no cards/gradients.
+fifths, key chord tables, fretboard with scale tabs). HTML + CSS + vanilla
+JS + SVG, **no build step, no dependencies**. All UI text and code comments
+are in English. Visual language: vintage printed chart — off-white paper
+(`--paper`), thin black rules, dense tables, black header bars, no
+cards/gradients.
 
 ## Core principle
 
@@ -32,12 +33,22 @@ the root string) — do not hand-draw diagrams.
 - Degrees display rules: chord tones read against the chord root (with
   per-chord overrides for ♯5/♭5/♭♭7 via `CHORDS[t].ovr`), scale tones against
   the key tonic (per-scale maps `SCALE_LABELS[scaleId]`, e.g. ♯4 in Lydian),
-  local center overrides both.
+  local center overrides both with plain semitone degrees. The label follows
+  the mark's resolved filter kind (in SCALE view a note that is also a chord
+  tone still reads as a scale degree).
 - Moveable diagrams: `SHAPES[t][col].f` = relative frets `[s6..s1]`, -1 =
   muted; `barre:[fromStr,toStr,rel]`. Base fret = `rootFret(pc, rootString)`.
-- Circle of fifths: annulus paths, outer = major keys, middle = relative
-  minors, innermost text = vii° of each major key; ring label mode
-  `names | romans | functions` relative to the selected key.
+- Diagram grids are compact: the top line sits right above the highest played
+  fret (`firstRow = min(used frets)`, capped at rel 0) and there are always
+  **4 rows minimum** (5 only when the shape really spans 5 frets).
+- Fretboard section hosts the scales: 10 tabs under the bar (7 modes of major
+  + Harmonic Minor / Gypsy / Acoustic), the scale formula sits in the black
+  bar (`#fretScaleHdr`). `selectKey` keeps the plain scale of the mode
+  (ionian ↔ aeolian) but never stomps an exotic choice.
+- Circle of fifths: three clickable rings — outer = major chord, middle =
+  its relative minor, inner = its vii° diminished (click selects the chord);
+  hub = selected key. All three rings follow the label mode
+  `names (C / Am / B°) | romans | functions` relative to the selected key.
 - Chord shape note math: `pc = (TUNING[i] + base + rel) % 12`,
   `base = (rootPc - TUNING[6-rootStr]) mod 12`.
 
@@ -58,7 +69,7 @@ the root string) — do not hand-draw diagrams.
    tests/run_tests.sh
    ```
 
-   - `tests/inject_tests.py` generates `tmp/index-test.html` (43 assertions,
+   - `tests/inject_tests.py` generates `tmp/index-test.html` (49 assertions,
      PASS/FAIL panel top-left; the test script **resets persisted state**
      before asserting) and `tmp/index-scenario.html` (C major → V → G7 →
      local center on ♭7) from `index.html` into `tmp/` (gitignored).

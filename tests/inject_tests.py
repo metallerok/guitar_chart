@@ -58,6 +58,12 @@ TEST_JS = r"""
     ok('F maj r6 barre at fret 1', !!barreF && barreF.getAttribute('y') !== null);
     ok('movRootLabel F', document.getElementById('movRootLabel').textContent.indexOf('F') !== -1);
 
+    // ---------- compact diagrams ----------
+    const svgH = s => [...document.querySelectorAll(s)].map(x => x.viewBox.baseVal.height);
+    ok('no 6-row diagrams left', Math.max(...svgH('#movBody svg'), ...svgH('#basicBody svg')) <= 24 + 5*23 + 8);
+    ok('diagrams uniform: 4 rows base',
+      Math.min(...svgH('#movBody svg'), ...svgH('#basicBody svg')) === 24 + 4*23 + 8);
+
     // ---------- basic chords ----------
     ok('35 basic diagrams', document.querySelectorAll('#basicBody svg').length === 35);
     const cPcs = [...new Set([...document.querySelectorAll('#basicBody tr:first-child td:nth-child(4) .cdot')]
@@ -78,13 +84,25 @@ TEST_JS = r"""
     ok('formula notes of C maj', document.querySelector('#formulaBody tr[data-ftype="maj"] .fnotes').textContent.trim() === 'C E G');
 
     // ---------- circle of fifths ----------
-    ok('24 cof segments', document.querySelectorAll('#cofSvg .cof-seg').length === 24);
+    ok('36 cof segments (3 rings)', document.querySelectorAll('#cofSvg .cof-seg').length === 36);
     // click G on the outer ring
-    const gSeg = [...document.querySelectorAll('#cofSvg .cof-seg')].find(p => p.dataset.pc === '7');
+    const gSeg = [...document.querySelectorAll('#cofSvg .cof-seg')]
+      .find(p => p.dataset.pc === '7' && !p.classList.contains('min') && !p.classList.contains('dimg'));
     ok('cof G seg exists', !!gSeg);
     gSeg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     ok('key = G after cof click', window.__APP.state.keyPc === 7);
     ok('cof center label G', [...document.querySelectorAll('#cofSvg .cof-center-big')].some(t => t.textContent === 'G'));
+    // names mode labels every ring as a chord
+    ok('names mode labels chords (Em)', [...document.querySelectorAll('#cofSvg text')].some(t => t.textContent === 'Em'));
+    // romans mode must reach all three rings
+    [...document.querySelectorAll('#cofModeRow button')].find(b => b.textContent === 'ROMANS').click();
+    const cofTexts = [...document.querySelectorAll('#cofSvg text')].map(t => t.textContent);
+    ok('romans on all rings', cofTexts.includes('I') && cofTexts.includes('vi') && cofTexts.includes('vii\u00b0'));
+    [...document.querySelectorAll('#cofModeRow button')].find(b => b.textContent === 'NAMES').click();
+    // inner ring: clicking the diminished chord selects it
+    const dimSeg = [...document.querySelectorAll('#cofSvg .cof-seg.dimg')].find(p => p.dataset.pc === '11');
+    dimSeg.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    ok('dim ring selects B\u00b0', S.sel.root === 11 && S.sel.type === 'dim');
 
     // ---------- key chord tables sync (C major, press V) ----------
     [...document.querySelectorAll('#keyRow button')].find(b => b.textContent === 'C').click();
@@ -114,16 +132,25 @@ TEST_JS = r"""
 
     // ---------- keyboard: arrows change key ----------
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
-    ok('arrowleft key B\u266d', S.keyPc === 11);
+    ok('arrowleft key B (pc 11)', S.keyPc === 11);
 
-    // ---------- scales ----------
-    ok('7 major mode rows', document.querySelectorAll('#scalesBody .scale-row').length === 7);
-    ok('3 extra scale rows', document.querySelectorAll('#extraScalesBody .scale-row').length === 3);
-    const dorianRow = [...document.querySelectorAll('#scalesBody .scale-row')].find(r => r.dataset.scale === 'dorian');
-    dorianRow.click();
-    ok('scale selection dorian', window.__APP.state.scale === 'dorian');
-    ok('dorian row highlighted', dorianRow.classList.contains('on'));
-    ok('dorian degs text', dorianRow.querySelector('.sdegs').textContent.indexOf('\u266d3') !== -1);
+    // ---------- scale tabs on the fretboard ----------
+    const tabs = [...document.querySelectorAll('#scaleTabs button')];
+    ok('10 scale tabs', tabs.length === 10);
+    // switching key mode keeps the plain scale of the mode (ionian is active)
+    [...document.querySelectorAll('#keyModeRow button')].find(b => b.textContent === 'MINOR').click();
+    ok('minor mode -> aeolian', S.keyMode === 'minor' && S.scale === 'aeolian');
+    [...document.querySelectorAll('#keyModeRow button')].find(b => b.textContent === 'MAJOR').click();
+    ok('major mode -> ionian again', S.keyMode === 'major' && S.scale === 'ionian');
+    const dTab = tabs.find(b => b.dataset.scale === 'dorian');
+    dTab.click();
+    ok('dorian tab selected', S.scale === 'dorian' && dTab.classList.contains('on'));
+    ok('scale formula in fretboard header',
+      document.getElementById('fretScaleHdr').textContent === '1 2 \u266d3 4 5 6 \u266d7');
+    // scale-only filter: the b3 of B dorian (D) must be labelled
+    [...document.querySelectorAll('#fretFilterRow button')].find(b => b.textContent === 'SCALE').click();
+    ok('dorian b3 labels on fretboard',
+      [...document.querySelectorAll('#fretSvg .g-mark text')].filter(t => t.textContent === '\u266d3').length >= 2);
 
     // ---------- persistence ----------
     const saved = JSON.parse(localStorage.getItem('guitar-poster-v1'));
