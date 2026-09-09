@@ -160,9 +160,6 @@ table.frm tr.on:hover td{background:var(--selbg)}
 .ktitle{font-size:10px;font-weight:700;letter-spacing:.14em;padding:2px 0 4px}
 table.keys td,table.keys th{padding:1px 2px;font-size:11px}
 table.keys th.deg{font-size:9px;letter-spacing:.06em;background:var(--paper2)}
-table.keys td.kname{font-weight:800;background:var(--paper2);width:26px;cursor:pointer}
-table.keys td.kname:hover{background:var(--wash)}
-table.keys td.kname.on{background:var(--selbg);color:var(--selfg)}
 table.keys td.kc{cursor:pointer;font-weight:600;line-height:1.15}
 table.keys td.kc small{display:block;font-size:8.5px;font-weight:600;color:var(--mid)}
 table.keys td.kc:hover{background:var(--wash)}
@@ -181,6 +178,7 @@ table.keys td.kc.on small{color:var(--auxdim)}
 .g-mark{cursor:pointer}
 .g-mark circle.dot{stroke:var(--ink);stroke-width:1.2}
 .g-mark.scale circle.dot{fill:var(--paper);fill-opacity:.25}
+.g-mark.plain circle.dot{fill:var(--paper);fill-opacity:.25}
 .g-mark.scale text{fill:var(--ink)}
 .g-mark.chordt circle.dot{fill:var(--selbg)}
 .g-mark.chordt text{fill:var(--selfg)}
@@ -220,16 +218,15 @@ table.keys td.kc.on small{color:var(--auxdim)}
 #tzSvg .tz-node.tz-chord circle.dot{fill:var(--selbg)}
 #tzSvg .tz-node text{font-size:15px;font-weight:600;text-anchor:middle;pointer-events:none}
 #tzSvg .tz-node text.small{font-size:10px}
+#tzSvg .tz-node text.rel{font-size:9.5px;font-weight:600;fill:var(--mid)}
+#tzSvg .tz-node text.rel.small{font-size:8px}
 #tzSvg .tz-tring{fill:none;stroke:var(--ink);stroke-width:1.2;opacity:.75}
 #tzSvg .tz-cring{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.5}
 #tzSvg .tz-bass circle{fill:none;stroke:var(--ink);stroke-width:2}
-#tzSvg .tz-badge rect{fill:var(--selbg)}
-#tzSvg .tz-badge text{font-size:10px;font-weight:700;text-anchor:middle}
 #tzSvg .tz-hintint{fill:var(--mid);font-size:9.5px;font-weight:600;text-anchor:middle;pointer-events:none}
 
 /* ---------- rhythm practice ---------- */
-.rwrap{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 8px 4px}
-@media(max-width:1240px){.rwrap{grid-template-columns:1fr}}
+.rwrap{display:grid;grid-template-columns:1fr;gap:12px;padding:8px 8px 4px}
 .rgrid{display:flex;flex-wrap:wrap;gap:6px}
 .rpatt{display:inline-flex;gap:3px;border:1px solid var(--line);padding:4px}
 .rcell{width:20px;height:26px;border:1px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700}
@@ -279,7 +276,8 @@ span[data-pc].xhl{background:var(--ink);color:var(--selfg);box-shadow:none}
   font-size:10px;line-height:1;padding:2px 8px;cursor:pointer;
 }
 .bar .bar-toggle:hover{background:var(--barhov)}
-#fretSec.closed .scale-tabs,#fretSec.closed .fretbox,#fretSec.closed .hint{display:none}
+#fretSec.closed .scale-tabs,#fretSec.closed .fretbox,#fretSec.closed .hint,
+#fretSec.closed #fretViewRow,#fretSec.closed #fretFilterRow,#fretSec.closed #fretScaleHdr{display:none}
 
 /* ---------- footer credit ---------- */
 footer.info{
@@ -347,7 +345,6 @@ footer.info{
     <section class="panel">
       <div class="bar">
         <span>TONNETZ</span>
-        <div class="seg" id="tzInvRow"></div>
         <span class="bar-aux bar-mono" id="tzHdr"></span>
       </div>
       <div class="fretbox">
@@ -355,7 +352,8 @@ footer.info{
       </div>
       <p class="hint">Degrees on a harmonic lattice: one step right = perfect fifth, up-right = major third, down-right = minor
       third (dashed). Upward triangles are major triads, downward minor — click inside one to select that chord; dim &amp; aug
-      run along the axes. Click a vertex to mark the local center; the ring follows the inversion.</p>
+      run along the axes. Click a vertex to mark the local center — every instance of that degree rings,
+      and the other vertices show their degree relative to it.</p>
     </section>
 
     <section class="panel">
@@ -769,7 +767,6 @@ function defaultState(){
     keyMode: 'major',    // 'major' | 'minor'
     display: 'deg',      // 'deg' | 'note' | 'int'  (degrees first by design)
     sel: { root: 0, type: 'maj' },   // selected chord (drives sync everywhere)
-    tzInv: 0,            // tonnetz triad inversion (display-only, 0..2)
     scale: 'ionian',     // scale shown on the fretboard (scale tabs)
     center: null,        // local harmonic center pc (null = off); marker only
     cofMode: 'names',    // 'names' | 'romans' | 'functions'
@@ -1120,7 +1117,6 @@ function buildKeyTables(){
     tbl.innerHTML = '';
     const thead = h('thead', {}, tbl);
     const hr = h('tr', {}, thead);
-    h('th', {}, hr);
     for (const r of rows){
       const th = h('th', { class:'deg' }, hr);
       th.textContent = r.rn;
@@ -1128,7 +1124,6 @@ function buildKeyTables(){
     const tbody = h('tbody', {}, tbl);
     for (let i = 0; i < 12; i++){
       const tr = h('tr', {}, tbody);
-      h('td', { class:'kname' }, tr);
       for (const r of rows) h('td', { class:'kc' }, tr);
     }
   }
@@ -1139,21 +1134,11 @@ function renderKeyTables(){
     const tbl = $(tblId);
     const body = tbl.tBodies[0];
     for (let i = 0; i < 12; i++){
-      const seg = CIRCLE.find(s => s.pc === i);
       const keyPc = i;
       const tr = body.children[i];
-      const kn = tr.children[0];
-      // row label: show key name depending on table mode
-      const keyLabel = mode === 'major' ? NOTES[i] : NOTES[i] + 'm';
-      kn.textContent = mode === 'major' ? seg.maj : seg.min;
-      kn.dataset.pc = i;
-      kn.classList.toggle('on', state.keyPc === i && state.keyMode === mode);
-      kn.onclick = () => selectKey(i, mode);
-      kn.dataset.tip = `<span class="t-big">${mode === 'major' ? seg.maj + ' major' : seg.min + ' minor'}</span><br>` +
-        `key signature: ${seg.sig || 'none'}`;
       for (let c = 0; c < rows.length; c++){
         const r = rows[c];
-        const td = tr.children[c + 1];
+        const td = tr.children[c];
         const root = (keyPc + r.deg) % 12;
         td.innerHTML = '';
         const big = h('span', {}, td);
@@ -1285,7 +1270,6 @@ const TZ = { SP:92, RADIUS:3, HIT:27 };
 TZ.HP = TZ.SP * Math.sqrt(3) / 2;
 const TRI_STEPS = { maj:[0,4,7], min:[0,3,7], dim:[0,3,6], aug:[0,4,8] };
 const TRI_DELTA = { 0:[0,0], 3:[1,-1], 4:[0,1], 6:[2,-2], 7:[1,0], 8:[0,2] };
-const INV_NAMES = ['root position', '1st inv', '2nd inv'];
 
 const tzNodes = [], tzMap = new Map(), tzEdges = [], tzEdgesBy = new Map();
 const tzKey = (i, j) => i + ',' + j;
@@ -1294,7 +1278,6 @@ const tzCube = (i, j) => Math.max(Math.abs(i), Math.abs(j), Math.abs(i + j));
 const tzPc  = (i, j) => ((7 * i + 4 * j) % 12 + 12) % 12;
 
 let tzGhost, tzTriPoly, tzTriLine, tzTriExt, tzBass, tzHoverG;
-const tzBadges = [];
 
 function tzSvgPoint(e){
   const svg = $('tzSvg');
@@ -1352,6 +1335,8 @@ function buildTonnetz(){
       node.ring = el('circle', { class:'tz-cring', r:28, style:'display:none' }, g);
       el('circle', { class:'dot', r:23 }, g);
       node.deg = el('text', { y:-3 }, g);
+      // relative-to-center label (dim, below the main one)
+      node.rel = el('text', { class:'rel', y:12, style:'display:none' }, g);
       g.addEventListener('click', ev => {
         ev.stopPropagation();
         toggleCenter((state.keyPc + node.pc) % 12);
@@ -1394,11 +1379,6 @@ function buildTonnetz(){
 
   tzBass = el('g', { class:'tz-bass', style:'display:none' }, gRings);
   el('circle', { r:30 }, tzBass);
-  for (let k = 0; k < 3; k++){
-    const bg = el('g', { class:'tz-badge', style:'display:none' }, gRings);
-    el('rect', { x:-8.5, y:-8.5, width:17, height:17 }, bg);
-    tzBadges.push({ g:bg, t:el('text', { y:3.5 }, bg) });
-  }
 
   // hover: ghost of the major triad + interval names on adjacent edges
   svg.addEventListener('pointermove', e => {
@@ -1453,17 +1433,8 @@ function renderTonnetz(){
   const chordPcs = new Set(CHORDS[sel.type].pcs.map(s => (relRoot + s) % 12));
   const triadQ = ({ maj:'maj', min:'min', dim:'dim', aug:'aug' })[sel.type] || null;
 
-  // center marker: nearest lattice instance of the center degree
-  let focusNode = null;
-  if (state.center != null){
-    const cd = (state.center - tonic + 12) % 12;
-    let bs = Infinity;
-    for (const n of tzNodes){
-      if (n.pc !== cd) continue;
-      const s = tzCube(n.i, n.j) * 100 + Math.abs(n.x) + Math.abs(n.y);
-      if (s < bs){ bs = s; focusNode = n; }
-    }
-  }
+  // local center: EVERY lattice instance of that degree gets the ring
+  const ctrLpc = state.center != null ? (state.center - tonic + 12) % 12 : null;
 
   for (const n of tzNodes){
     const isChord = chordPcs.has(n.pc);
@@ -1480,12 +1451,24 @@ function renderTonnetz(){
     n.deg.classList.toggle('small', label.length > 2);
     // inline fill: the svg text CSS rule would beat a fill attribute
     n.deg.style.fill = isChord ? 'var(--selfg)' : 'var(--ink)';
-    n.ring.style.display = (focusNode === n) ? '' : 'none';
+    const isCenter = ctrLpc != null && n.pc === ctrLpc;
+    n.ring.style.display = isCenter ? '' : 'none';
+    // degree relative to the local center, dim, under the main label
+    if (ctrLpc != null && !isCenter){
+      const rn = DEG_NAMES[(n.pc - ctrLpc + 12) % 12];
+      n.rel.textContent = rn;
+      n.rel.classList.toggle('small', rn.length > 2);
+      n.rel.style.display = '';
+    } else {
+      n.rel.style.display = 'none';
+    }
     const absPc = (tonic + n.pc) % 12;
     n.g.dataset.tip = `<span class="t-big">${NOTES[absPc]}</span> · ${DEG_FN[n.pc]}` +
       `<br>degree ${DEG_NAMES[semiT]} · interval ${INT_NAMES[semiT]}` +
       (isChord ? `<br><span class="t-mid">chord tone of ${chordName(sel.root, sel.type)}</span>` : '') +
-      (focusNode === n ? '<br><span class="t-mid">local center</span>' : '');
+      (isCenter ? '<br><span class="t-mid">local center</span>'
+        : ctrLpc != null
+          ? `<br><span class="t-mid">from center: ${DEG_NAMES[(n.pc - ctrLpc + 12) % 12]}</span>` : '');
   }
 
   // triad overlay: triangle/line for the four plain triads, node glow only
@@ -1528,35 +1511,11 @@ function renderTonnetz(){
     } else {
       tzTriPoly.setAttribute('points', P.map(p => p.x + ',' + p.y).join(' '));
     }
-    // voice badges 1-2-3 toward the centroid; the inversion rotates them
-    const cx = (P[0].x + P[1].x + P[2].x) / 3, cy = (P[0].y + P[1].y + P[2].y) / 3;
-    const inv = state.tzInv || 0;
-    const voicing = tri.steps.slice(inv).concat(tri.steps.slice(0, inv));
-    voicing.forEach((s, k) => {
-      const n = s === 0 ? tri.root : tri.members[tri.steps.indexOf(s)];
-      let ox, oy;
-      if (collinear){
-        const dx = P[2].x - P[0].x, dy = P[2].y - P[0].y, L = Math.hypot(dx, dy) || 1;
-        ox = -dy / L * 31; oy = dx / L * 31;
-      } else {
-        const dx = cx - n.x, dy = cy - n.y, L = Math.hypot(dx, dy) || 1;
-        ox = dx / L * 30; oy = dy / L * 30;
-      }
-      tzBadges[k].g.style.transform = `translate(${n.x + ox}px,${n.y + oy}px)`;
-      tzBadges[k].g.style.display = '';
-      tzBadges[k].t.textContent = k + 1;
-      tzBadges[k].t.style.fill = 'var(--selfg)';
-    });
-    for (let k = voicing.length; k < tzBadges.length; k++) tzBadges[k].g.style.display = 'none';
-    const bn = voicing[0] === 0 ? tri.root : tri.members[tri.steps.indexOf(voicing[0])];
-    tzBass.style.transform = `translate(${bn.x}px,${bn.y}px)`;
-  } else {
-    for (const b of tzBadges) b.g.style.display = 'none';
+    tzBass.style.transform = `translate(${tri.root.x}px,${tri.root.y}px)`;
   }
 
   $('tzHdr').textContent = chordName(sel.root, sel.type) +
-    ' · ' + CHORDS[sel.type].degs +
-    (tri ? ' · ' + INV_NAMES[state.tzInv || 0] : '');
+    ' · ' + CHORDS[sel.type].degs;
 }
 
 /* ============================================================
@@ -1612,7 +1571,11 @@ function renderFretNeck(svgId, g, membership, labelFor, tipFor, click){
       const gg = el('g', { class:'g-mark ' + kind, 'data-pc':pc }, svg);
       gg.dataset.tip = tipFor(pc, 6 - i, f);
       if (click) gg.addEventListener('click', ev => { ev.stopPropagation(); click(pc); });
-      el('circle', { class:'dot', cx:x, cy:y, r:kind === 'plain' ? g.dotR * 0.42 : g.dotR }, gg);
+      // the center renders as a full note even in the plain fallback;
+      // genuinely plain marks (ALL filter non-members) stay small dots
+      const isCtr = state.center === pc;
+      el('circle', { class:'dot', cx:x, cy:y,
+        r:(kind === 'plain' && !isCtr) ? g.dotR * 0.42 : g.dotR }, gg);
       // selected chord root gets a solid extra ring
       if (state.sel && kind === 'chordt' && pc === state.sel.root){
         el('circle', { cx:x, cy:y, r:g.dotR + 3, fill:'none', stroke:'var(--ink)', 'stroke-width':1.4 }, gg);
@@ -1620,7 +1583,8 @@ function renderFretNeck(svgId, g, membership, labelFor, tipFor, click){
       if (state.center === pc){
         el('circle', { class:'cring', cx:x, cy:y, r:g.dotR + 3.5 }, gg);
       }
-      if (kind !== 'plain'){
+      // the local center keeps its degree label even as a plain fallback mark
+      if (kind !== 'plain' || state.center === pc){
         const t = el('text', { x, y:y + 3 }, gg);
         t.textContent = labelFor(pc, kind);
       }
@@ -1797,11 +1761,6 @@ function buildControls(){
     b.textContent = label;
     b.addEventListener('click', () => selectKey(state.keyPc, m));
   }
-  for (const [v, label] of [[0,'ROOT'],[1,'1ST'],[2,'2ND']]){
-    const b = h('button', {}, $('tzInvRow'));
-    b.textContent = label;
-    b.addEventListener('click', () => { state.tzInv = v; renderAll(); });
-  }
   for (const [m, label] of [['names','NAMES'],['romans','ROMANS'],['functions','FUNCTIONS']]){
     const b = h('button', {}, $('cofModeRow'));
     b.textContent = label;
@@ -1853,8 +1812,6 @@ function renderHeader(){
     b.classList.toggle('on', i === state.keyPc));
   [...$('keyModeRow').children].forEach((b, i) =>
     b.classList.toggle('on', ['major','minor'][i] === state.keyMode));
-  [...$('tzInvRow').children].forEach((b, i) =>
-    b.classList.toggle('on', [0,1,2][i] === (state.tzInv || 0)));
   [...$('cofModeRow').children].forEach((b, i) =>
     b.classList.toggle('on', ['names','romans','functions'][i] === state.cofMode));
   [...$('fretFilterRow').children].forEach((b, i) =>

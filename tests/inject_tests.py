@@ -219,9 +219,11 @@ TEST_JS = r"""
     const tzChordPcs = [...new Set([...document.querySelectorAll('#tzSvg .tz-node.tz-chord')]
       .map(g => +g.dataset.pc))].sort((a, b) => a - b);
     ok('tonnetz highlights G7 pcs', JSON.stringify(tzChordPcs) === JSON.stringify([2, 5, 7, 11]));
+    ok('no voice badges on tonnetz',
+      !document.querySelector('#tzSvg .tz-badge') &&
+      document.querySelectorAll('#tzSvg .tz-bass').length === 1);
     ok('tonnetz overlay only for plain triads',
-      document.querySelector('#tzSvg .tz-tri').style.display === 'none' &&
-      [...document.querySelectorAll('#tzSvg .tz-badge')].every(b => b.style.display === 'none'));
+      document.querySelector('#tzSvg .tz-tri').style.display === 'none');
     window.__APP.selectChord(7, 'maj');
     ok('tonnetz triangle for maj', document.querySelector('#tzSvg .tz-tri').style.display !== 'none');
     window.__APP.tzClick(46, -79.674 / 3);   // interior of the tonic major triangle
@@ -243,11 +245,32 @@ TEST_JS = r"""
     ok('tonnetz interval labels', [...document.querySelectorAll('#tzSvg .tz-node text')]
       .some(t => t.textContent === 'P5'));
     dispBtns.find(b => b.textContent === 'DEGREES').click();
-    [...document.querySelectorAll('#tzInvRow button')].find(b => b.textContent === '1ST').click();
-    ok('tonnetz inversion seg', S.tzInv === 1 &&
-      document.getElementById('tzHdr').textContent.indexOf('1st') !== -1);
-    [...document.querySelectorAll('#tzInvRow button')].find(b => b.textContent === 'ROOT').click();
+    // ---------- local center: every occurrence rings + relative labels ----------
+    ok('inversion seg removed from tonnetz', !document.getElementById('tzInvRow'));
+    ok('header has no inversion suffix',
+      document.getElementById('tzHdr').textContent.indexOf('inv') === -1);
+    const ctrAbs = document.querySelectorAll('#tzSvg .tz-node[data-pc="7"]').length;
+    const ctrRings = [...document.querySelectorAll('#tzSvg .tz-cring')]
+      .filter(c => c.style.display !== 'none').length;
+    ok('center ring on every lattice occurrence', ctrAbs >= 2 && ctrRings === ctrAbs);
+    const allN = document.querySelectorAll('#tzSvg .tz-node').length;
+    const rels = [...document.querySelectorAll('#tzSvg .tz-node text.rel')]
+      .filter(t => t.style.display !== 'none');
+    ok('relative labels on all non-center nodes', rels.length === allN - ctrAbs);
+    ok('relative label reads the degree (C is the 4th of G)',
+      rels.some(t => t.textContent === '4'));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    ok('escape clears center', S.center === null &&
+      [...document.querySelectorAll('#tzSvg .tz-cring')].every(c => c.style.display === 'none'));
+
+    // ---------- fretboard center keeps its degree label ----------
+    S.filter = 'both'; S.fretView = 'scale';
+    S.center = 1;                     // not in C major / Cmaj: plain fallback mark
+    window.__APP.renderAll();
+    const ctrMark = document.querySelector('#fretSvg .g-mark[data-pc="1"]');
+    ok('fretboard center shows its degree label', !!ctrMark &&
+      !!ctrMark.querySelector('text') && !!ctrMark.querySelector('.cring'));
+    S.center = null; window.__APP.renderAll();
 
     // ---------- rhythm cards (reference) + generator ----------
     ok('16 sixteenth cards', document.querySelectorAll('#rGrid16 .rpatt').length === 16);

@@ -32,9 +32,9 @@ the root string) — do not hand-draw diagrams.
 - App state (persisted in `localStorage` key `guitar-poster-v1`):
   `keyPc`, `keyMode`, `display` (`deg|note|int`, **degrees-first by design**),
   `sel {root,type}` (the chord — **no separate root state**: `sel.root` drives
-  the moveable transposition AND the formula NOTES column), `tzInv` (tonnetz
-  inversion, display-only), `scale`, `center` (local center — **visual marker
-  only**, ring + chip), `cofMode`, `filter`, `fretView` (`scale|notes`),
+   the moveable transposition AND the formula NOTES column), `scale`,
+   `center` (local center — **visual marker
+   only**, ring + chip), `cofMode`, `filter`, `fretView` (`scale|notes`),
   `fretOpen` (dock state), `theme` (`dark|light`, **dark by default**).
 - **One source of truth for key**: `selectKey` (dock KEY chips, wheel outer/
   middle rings, key-table row labels) resolves `sel` to the new key's tonic
@@ -85,9 +85,12 @@ the root string) — do not hand-draw diagrams.
   of degree nodes, `pc = (7i + 4j) % 12`; P5 edges solid, M3 long dash,
   m3 dotted; axis arrows label the six directions. Sync: node labels follow
   the global display mode (chord tones read against the chord root), chord
-  pcs fill as `tz-chord`, plain triads get the triangle/line overlay with
-  voice badges + bass ring (inversion = `state.tzInv`, local seg in the bar),
-  the center shows as the dashed `tz-cring`. Vertex click = `toggleCenter`,
+   pcs fill as `tz-chord`, plain triads get the triangle/line overlay with a
+   bass ring on the root (no voice badges — removed),
+   the local center rings **every** lattice instance of that degree
+   (`tz-cring`) and all other nodes show a dim `text.rel` degree label
+   relative to the center under their main label. Vertex click =
+   `toggleCenter`,
   triangle-interior click = `selectChord` (exposed as `__APP.tzClick(x,y)`
   in lattice coords). Hover = ghost major triangle + interval names on
   adjacent edges. Nodes carry absolute `data-pc` → cross-highlight.
@@ -120,7 +123,7 @@ the root string) — do not hand-draw diagrams.
    tests/run_tests.sh
    ```
 
-   - `tests/inject_tests.py` generates `tmp/index-test.html` (94 assertions,
+   - `tests/inject_tests.py` generates `tmp/index-test.html` (100 assertions,
      PASS/FAIL panel top-left; the test script **resets persisted state**
      before asserting) and `tmp/index-scenario.html` (C major → V → G7 →
      local center on ♭7) from `index.html` into `tmp/` (gitignored).
