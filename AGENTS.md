@@ -10,7 +10,7 @@ All UI text and code comments are in English. Visual language: vintage printed
 chart — paper/ink color pair via CSS variables, thin rules, dense tables, dark
 header bars, no cards/gradients. **Dark theme is the default** (`body.dark`,
 warm near-black paper + cream ink); `state.theme` persists it, the THEME
-seg (DARK | LIGHT) lives in the bottom dock. All colors must go through
+seg (DARK | LIGHT) lives in the top header SETTINGS spoiler. All colors must go through
 the variables in `:root` (light) / `body.dark` (dark) — incl. `--auxdim`,
 `--paperhi`, `--hov`, `--barhov`, `--shadow`; SVG text inherits
 `svg text{fill:var(--ink)}`.
@@ -35,7 +35,8 @@ the root string) — do not hand-draw diagrams.
    the moveable transposition AND the formula NOTES column), `scale`,
    `center` (local center — **visual marker
    only**, ring + chip), `cofMode`, `filter`, `fretView` (`scale|notes`),
-  `fretOpen` (dock state), `theme` (`dark|light`, **dark by default**).
+   `fretOpen` (dock state), `settingsOpen` (header SETTINGS spoiler),
+   `theme` (`dark|light`, **dark by default**).
 - **One source of truth for key**: `selectKey` (dock KEY chips, wheel outer/
   middle rings, key-table row labels) resolves `sel` to the new key's tonic
   triad — every view follows a key change. `selectChord` changes only the
@@ -45,8 +46,10 @@ the root string) — do not hand-draw diagrams.
   (cross-highlight is done by toggling `.xhl` on cached `[data-pc]` elements).
 - Bottom dock (`.dock-wrap`, `position:sticky; bottom:0`): the fretboard
   panel (collapsible via `#fretToggle`, persisted as `fretOpen`) plus the
-  global controls (SHOW / KEY / LOCAL CENTER / THEME) — always visible while
-  scrolling. The fretboard bar has a view tab `SCALE | NOTES` (NOTES = the
+  global controls (KEY / LOCAL CENTER only) — always visible while
+  scrolling. SHOW + THEME moved into the top header under a SETTINGS
+  spoiler (`#settingsToggle`, persisted as `settingsOpen`) to keep the
+  dock slim on mobile. The fretboard bar has a view tab `SCALE | NOTES` (NOTES = the
   old all-notes neck, lives in the same `#fretSvg`); scale tabs + formula +
   filter are hidden in NOTES view. Scale tabs all keep their right border
   (`margin-right:-1px` collapse) so the border shows before the extra-group
@@ -123,7 +126,7 @@ the root string) — do not hand-draw diagrams.
    tests/run_tests.sh
    ```
 
-   - `tests/inject_tests.py` generates `tmp/index-test.html` (100 assertions,
+   - `tests/inject_tests.py` generates `tmp/index-test.html` (104 assertions,
      PASS/FAIL panel top-left; the test script **resets persisted state**
      before asserting) and `tmp/index-scenario.html` (C major → V → G7 →
      local center on ♭7) from `index.html` into `tmp/` (gitignored).

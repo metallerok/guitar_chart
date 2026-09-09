@@ -179,7 +179,19 @@ TEST_JS = r"""
     dispBtns.find(b => b.textContent === 'DEGREES').click();
 
     // ---------- sticky dock: fretboard + controls ----------
-    ok('4 control groups docked', document.querySelectorAll('.dock-controls .ctrl-block').length === 4);
+    ok('key + center docked, show/theme in header',
+      document.querySelectorAll('.dock-controls .ctrl-block').length === 2 &&
+      !!document.querySelector('header.top #displayRow') &&
+      !!document.querySelector('header.top #themeRow') &&
+      !document.querySelector('#dockWrap #displayRow'));
+    ok('settings spoiler closed by default', S.settingsOpen === false &&
+      !document.getElementById('hdrSet').classList.contains('open'));
+    document.getElementById('settingsToggle').click();
+    ok('settings spoiler opens', S.settingsOpen === true &&
+      document.getElementById('hdrSet').classList.contains('open'));
+    document.getElementById('settingsToggle').click();
+    ok('settings spoiler closes again', S.settingsOpen === false &&
+      !document.getElementById('hdrSet').classList.contains('open'));
     document.getElementById('fretToggle').click();
     ok('fretboard collapses', document.getElementById('fretSec').classList.contains('closed') && S.fretOpen === false);
     document.getElementById('fretToggle').click();

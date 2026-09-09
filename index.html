@@ -57,8 +57,12 @@ svg text{user-select:none;fill:var(--ink)}
 /* ---------- top header ---------- */
 header.top{
   padding:12px 18px 8px;border-bottom:2px solid var(--ink);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;
 }
 .brand h1{font-size:22px;font-weight:800;letter-spacing:.06em}
+.hdr-set{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.hdr-panel{display:none;gap:14px 26px;align-items:flex-start}
+.hdr-set.open .hdr-panel{display:flex}
 .ctrl-block{display:flex;flex-direction:column;gap:4px}
 .ctrl-block .lbl{font-size:9.5px;letter-spacing:.16em;font-weight:700;color:var(--mid)}
 .ctrl-block .sub{font-size:9.5px;color:var(--mid)}
@@ -297,6 +301,21 @@ footer.info{
   <div class="brand">
     <h1>GUITAR CHART</h1>
   </div>
+  <div class="hdr-set" id="hdrSet">
+    <button class="chip" id="settingsToggle" title="display &amp; theme settings">SETTINGS &#9656;</button>
+    <div class="hdr-panel" id="hdrSettings">
+      <div class="ctrl-block">
+        <span class="lbl">SHOW</span>
+        <div class="seg" id="displayRow"></div>
+        <span class="sub">label notes as degrees, note names or intervals</span>
+      </div>
+      <div class="ctrl-block">
+        <span class="lbl">THEME</span>
+        <div class="seg" id="themeRow"></div>
+        <span class="sub">ink &amp; paper</span>
+      </div>
+    </div>
+  </div>
 </header>
 
 <main class="poster">
@@ -415,11 +434,6 @@ footer.info{
   </section>
   <div class="dock-controls">
     <div class="ctrl-block">
-      <span class="lbl">SHOW</span>
-      <div class="seg" id="displayRow"></div>
-      <span class="sub">label notes as degrees, note names or intervals</span>
-    </div>
-    <div class="ctrl-block">
       <span class="lbl">KEY</span>
       <div style="display:flex;gap:8px;align-items:center">
         <div class="chips" id="keyRow"></div>
@@ -434,11 +448,6 @@ footer.info{
         <button class="chip" id="clearCenter">clear</button>
       </div>
       <span class="sub">click any note on a neck to mark it · Esc clears</span>
-    </div>
-    <div class="ctrl-block">
-      <span class="lbl">THEME</span>
-      <div class="seg" id="themeRow"></div>
-      <span class="sub">ink &amp; paper</span>
     </div>
   </div>
 </div>
@@ -773,6 +782,7 @@ function defaultState(){
     filter: 'both',      // fretboard filter: 'chord' | 'scale' | 'both' | 'chrom'
     fretView: 'scale',   // fretboard tab: 'scale' | 'notes'
     fretOpen: true,      // docked fretboard expanded?
+    settingsOpen: false, // header SETTINGS spoiler (SHOW + THEME)
     theme: 'dark'        // 'dark' | 'light' (ink & paper)
   };
 }
@@ -1804,8 +1814,16 @@ function buildControls(){
     save();
   });
   $('clearCenter').addEventListener('click', () => { state.center = null; renderAll(); });
+  $('settingsToggle').addEventListener('click', () => {
+    state.settingsOpen = !state.settingsOpen;
+    renderHeader();
+    save();
+  });
 }
 function renderHeader(){
+  // header SETTINGS spoiler (SHOW + THEME live there now)
+  $('hdrSet').classList.toggle('open', !!state.settingsOpen);
+  $('settingsToggle').textContent = 'SETTINGS ' + (state.settingsOpen ? '\u25BE' : '\u25B8');
   [...$('displayRow').children].forEach((b, i) =>
     b.classList.toggle('on', ['deg','note','int'][i] === state.display));
   [...$('keyRow').children].forEach((b, i) =>
