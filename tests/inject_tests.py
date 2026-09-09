@@ -111,6 +111,11 @@ TEST_JS = r"""
     ok('formula now dom7', document.querySelector('#formulaBody tr.on').dataset.ftype === '7');
     // fretboard: chord tone marks exist for G7
     ok('fretboard chordt marks', document.querySelectorAll('#fretSvg .g-mark.chordt').length >= 8);
+    // string 1 must be on top: labels read E B G D A E from top to bottom
+    const slbls = [...document.querySelectorAll('#fretSvg .g-slbl')]
+      .sort((a, b) => a.getAttribute('y') - b.getAttribute('y'))
+      .map(t => t.textContent);
+    ok('string 1 on top (E B G D A E)', JSON.stringify(slbls) === JSON.stringify(['E','B','G','D','A','E']));
     // degree labels read against the chord root G
     const chordB7 = [...document.querySelectorAll('#fretSvg .g-mark.chordt text')].find(t => t.textContent === '\u266d7');
     ok('fretboard shows b7 on chord tone', !!chordB7);
@@ -120,6 +125,10 @@ TEST_JS = r"""
     ok('center chip G = V', document.getElementById('centerChip').textContent.indexOf('V') !== -1);
     window.__APP.toggleCenter(5);   // center on F = IV of C major
     ok('center chip F = IV', document.getElementById('centerChip').textContent.indexOf('IV') !== -1);
+    // the center is a marker only: scale tones must keep their scale degrees
+    // (C stays 1, A stays 6 — the old center override mislabelled them 7 and 4)
+    const scaleTexts = [...document.querySelectorAll('#fretSvg .g-mark.scale text')].map(t => t.textContent);
+    ok('center does not corrupt scale labels', scaleTexts.includes('1') && scaleTexts.includes('6'));
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     ok('esc clears center', S.center === null);
 
@@ -129,6 +138,20 @@ TEST_JS = r"""
     dispBtns.find(b => b.textContent === 'INTERVALS').click();
     ok('intervals mode on fretboard', [...document.querySelectorAll('#fretSvg .g-mark text')].some(t => t.textContent === 'P5'));
     dispBtns.find(b => b.textContent === 'DEGREES').click();
+
+    // ---------- sticky dock: fretboard + controls ----------
+    ok('3 control groups docked', document.querySelectorAll('.dock-controls .ctrl-block').length === 3);
+    document.getElementById('fretToggle').click();
+    ok('fretboard collapses', document.getElementById('fretSec').classList.contains('closed') && S.fretOpen === false);
+    document.getElementById('fretToggle').click();
+    ok('fretboard expands again', !document.getElementById('fretSec').classList.contains('closed') && S.fretOpen === true);
+    // NOTES view lives on a fretboard tab now
+    [...document.querySelectorAll('#fretViewRow button')].find(b => b.textContent === 'NOTES').click();
+    ok('notes view on fretboard tab', S.fretView === 'notes' &&
+      document.querySelectorAll('#fretSvg .g-mark').length >= 60);
+    ok('notes view hides scale tabs', document.getElementById('scaleTabs').hidden === true);
+    [...document.querySelectorAll('#fretViewRow button')].find(b => b.textContent === 'SCALE').click();
+    ok('back to scale view', S.fretView === 'scale' && document.getElementById('scaleTabs').hidden === false);
 
     // ---------- keyboard: arrows change key ----------
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));

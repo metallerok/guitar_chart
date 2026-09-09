@@ -33,10 +33,9 @@ button{font-family:inherit;color:inherit}
 h1,h2,p,ul{margin:0}
 svg text{user-select:none}
 
-/* ---------- header ---------- */
+/* ---------- top header ---------- */
 header.top{
-  display:flex;flex-wrap:wrap;gap:12px 26px;align-items:flex-start;
-  padding:14px 18px 10px;border-bottom:2px solid var(--ink);
+  padding:12px 18px 8px;border-bottom:2px solid var(--ink);
 }
 .brand h1{font-size:22px;font-weight:800;letter-spacing:.06em}
 .ctrl-block{display:flex;flex-direction:column;gap:4px}
@@ -153,7 +152,7 @@ table.keys td.kc.on small{color:#cfc9b8}
 
 /* ---------- fretboard ---------- */
 .fretbox{padding:8px 8px 2px}
-#fretSvg,#chromSvg{display:block;width:100%;height:auto}
+#fretSvg{display:block;width:100%;max-width:1000px;height:auto;margin:0 auto}
 .g-fret{stroke:var(--line);stroke-width:1.4}
 .g-string{stroke:var(--line)}
 .g-nut{fill:var(--ink)}
@@ -204,10 +203,27 @@ span[data-pc].xhl{background:var(--ink);color:var(--selfg);box-shadow:none}
 #tip .t-big{font-size:14px;font-weight:800}
 #tip .t-mid{color:var(--mid)}
 
-/* ---------- footer ---------- */
+/* ---------- bottom dock (sticky: fretboard + global controls) ---------- */
+.dock-wrap{
+  position:sticky;bottom:0;z-index:40;
+  background:var(--paper);
+  border-top:2px solid var(--ink);
+  padding:8px 18px 10px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.dock-controls{display:flex;flex-wrap:wrap;gap:10px 26px;align-items:flex-start}
+#fretSec .bar{flex-wrap:wrap}
+.bar-spring{flex:1}
+.bar .bar-toggle{
+  border:1px solid var(--paper);background:transparent;color:var(--paper);
+  font-size:10px;line-height:1;padding:2px 8px;cursor:pointer;
+}
+.bar .bar-toggle:hover{background:#3a362c}
+#fretSec.closed .scale-tabs,#fretSec.closed .fretbox,#fretSec.closed .hint{display:none}
+
+/* ---------- footer credit ---------- */
 footer.info{
-  margin:0 18px 20px;border-top:2px solid var(--ink);padding-top:8px;
-  display:flex;justify-content:space-between;flex-wrap:gap 8px;gap:8px;
+  margin:0 18px 12px;border-top:2px solid var(--ink);padding-top:8px;
   font-size:10.5px;color:var(--mid);
 }
 
@@ -222,27 +238,6 @@ footer.info{
 <header class="top">
   <div class="brand">
     <h1>GUITAR CHART</h1>
-  </div>
-  <div class="ctrl-block">
-    <span class="lbl">SHOW</span>
-    <div class="seg" id="displayRow"></div>
-    <span class="sub">label notes as degrees, note names or intervals</span>
-  </div>
-  <div class="ctrl-block">
-    <span class="lbl">KEY</span>
-    <div style="display:flex;gap:8px;align-items:center">
-      <div class="chips" id="keyRow"></div>
-      <div class="seg" id="keyModeRow"></div>
-    </div>
-    <span class="sub">drives the circle of fifths, the key-chord tables and the fretboard scale</span>
-  </div>
-  <div class="ctrl-block">
-    <span class="lbl">LOCAL CENTER</span>
-    <div style="display:flex;gap:6px;align-items:center">
-      <span class="center-chip" id="centerChip">—</span>
-      <button class="chip" id="clearCenter">clear</button>
-    </div>
-    <span class="sub">click any note on a neck to re-read all degrees from it</span>
   </div>
 </header>
 
@@ -304,28 +299,52 @@ footer.info{
       </div>
     </section>
 
-    <section class="panel">
-      <div class="bar">
-        <span>FRETBOARD</span>
-        <span class="bar-aux bar-mono" id="fretScaleHdr"></span>
-        <div class="seg" id="fretFilterRow"></div>
-      </div>
-      <div class="scale-tabs" id="scaleTabs"></div>
-      <div class="fretbox"><svg id="fretSvg" viewBox="0 0 790 192" role="img" aria-label="Guitar fretboard"></svg></div>
-      <p class="hint" id="fretInfo"></p>
-    </section>
-
-    <section class="panel">
-      <div class="bar"><span>NOTES ON THE FRETBOARD</span></div>
-      <div class="fretbox"><svg id="chromSvg" viewBox="0 0 720 152" role="img" aria-label="All notes on the fretboard"></svg></div>
-    </section>
-
   </div>
 </main>
 
 <footer class="info">
   <span>Adapted from the printed guitar poster by mtprojects.space (CC BY-NC) · interactive rebuild</span>
 </footer>
+
+<!-- sticky bottom dock: fretboard (collapsible) + global controls -->
+<div class="dock-wrap" id="dockWrap">
+  <section class="panel" id="fretSec">
+    <div class="bar">
+      <span>FRETBOARD</span>
+      <div class="seg" id="fretViewRow"></div>
+      <span class="bar-aux bar-mono" id="fretScaleHdr"></span>
+      <div class="seg" id="fretFilterRow"></div>
+      <span class="bar-spring"></span>
+      <button class="bar-toggle" id="fretToggle" title="collapse / expand">&#9662;</button>
+    </div>
+    <div class="scale-tabs" id="scaleTabs"></div>
+    <div class="fretbox"><svg id="fretSvg" viewBox="0 0 790 192" role="img" aria-label="Guitar fretboard"></svg></div>
+    <p class="hint" id="fretInfo"></p>
+  </section>
+  <div class="dock-controls">
+    <div class="ctrl-block">
+      <span class="lbl">SHOW</span>
+      <div class="seg" id="displayRow"></div>
+      <span class="sub">label notes as degrees, note names or intervals</span>
+    </div>
+    <div class="ctrl-block">
+      <span class="lbl">KEY</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="chips" id="keyRow"></div>
+        <div class="seg" id="keyModeRow"></div>
+      </div>
+      <span class="sub">drives the circle of fifths, the key-chord tables and the fretboard scale</span>
+    </div>
+    <div class="ctrl-block">
+      <span class="lbl">LOCAL CENTER</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="center-chip" id="centerChip">—</span>
+        <button class="chip" id="clearCenter">clear</button>
+      </div>
+      <span class="sub">click any note on a neck to mark it · Esc clears</span>
+    </div>
+  </div>
+</div>
 
 <div id="tip" hidden></div>
 
@@ -636,10 +655,12 @@ function defaultState(){
     root: 0,             // root pc for moveable diagrams
     display: 'deg',      // 'deg' | 'note' | 'int'  (degrees first by design)
     sel: { root: 0, type: 'maj' },   // selected chord (drives sync everywhere)
-    scale: 'ionian',     // scale shown on fretboard & scale rows
-    center: null,        // local harmonic center pc (null = off)
+    scale: 'ionian',     // scale shown on the fretboard (scale tabs)
+    center: null,        // local harmonic center pc (null = off); marker only
     cofMode: 'names',    // 'names' | 'romans' | 'functions'
-    filter: 'both'       // fretboard filter: 'chord' | 'scale' | 'both' | 'chrom'
+    filter: 'both',      // fretboard filter: 'chord' | 'scale' | 'both' | 'chrom'
+    fretView: 'scale',   // fretboard tab: 'scale' | 'notes'
+    fretOpen: true       // docked fretboard expanded?
   };
 }
 function loadState(){
@@ -1138,10 +1159,13 @@ function drawNeck(svg, g){
     }
   }
   for (let i = 0; i < 6; i++){
-    el('line', { class:'g-string', x1:g.nutX - 14, y1:g.strY0 + i * g.strGap,
-      x2:g.nutX + FRETS * g.fretW + 10, y2:g.strY0 + i * g.strGap,
+    const y = g.strY0 + (5 - i) * g.strGap;   // string 1 on top, string 6 at the bottom
+    el('line', { class:'g-string', x1:g.nutX - 14, y1:y,
+      x2:g.nutX + FRETS * g.fretW + 10, y2:y,
       'stroke-width':(2.2 - i * 0.28).toFixed(2) }, svg);
-    const t = el('text', { class:'g-slbl', x:g.nutX - 22, y:g.strY0 + i * g.strGap + 3 }, svg);
+    // tuning labels on the right edge only — the left edge hosts the
+    // open-position marks, labels there would overlap them
+    const t = el('text', { class:'g-slbl', x:g.nutX + FRETS * g.fretW + 16, y:y + 3 }, svg);
     t.textContent = NOTES[TUNING[i]];
   }
   for (const f of [0,3,5,7,9,12]){
@@ -1162,7 +1186,7 @@ function renderFretNeck(svgId, g, membership, labelFor, tipFor, click){
       const kind = membership(pc);
       if (!kind) continue;
       const x = (f === 0 ? g.nutX - 16 : g.nutX + (f - 0.5) * g.fretW);
-      const y = g.strY0 + i * g.strGap;
+      const y = g.strY0 + (5 - i) * g.strGap;
       const gg = el('g', { class:'g-mark ' + kind, 'data-pc':pc }, svg);
       gg.dataset.tip = tipFor(pc, 6 - i, f);
       if (click) gg.addEventListener('click', ev => { ev.stopPropagation(); click(pc); });
@@ -1183,14 +1207,11 @@ function renderFretNeck(svgId, g, membership, labelFor, tipFor, click){
 }
 
 // Label logic for the main fretboard: chord tones read against the chord
-// root, scale tones against the key tonic; the local center overrides all
-// with plain degrees from itself.
+// root, scale tones against the key tonic. The local center is a visual
+// marker only — it never rewrites the labels, so the scale always reads
+// as the scale.
 function fretLabelFor(pc, isChordTone){
   if (state.display === 'note') return NOTES[pc];
-  if (state.center != null){
-    const semi = (pc - state.center + 12) % 12;
-    return state.display === 'int' ? INT_NAMES[semi] : DEG_NAMES[semi];
-  }
   if (isChordTone && state.sel){
     const semi = (pc - state.sel.root + 12) % 12;
     return state.display === 'int'
@@ -1201,6 +1222,45 @@ function fretLabelFor(pc, isChordTone){
 }
 
 function renderFretboard(){
+  // dock: collapse state + view tab
+  $('fretSec').classList.toggle('closed', !state.fretOpen);
+  $('fretToggle').textContent = state.fretOpen ? '\u25BE' : '\u25B8';
+
+  const scaleView = state.fretView === 'scale';
+  $('scaleTabs').hidden = !scaleView;
+  $('fretScaleHdr').hidden = !scaleView;
+  $('fretFilterRow').hidden = !scaleView;
+
+  if (!scaleView){
+    // NOTES view: every note, degrees read from the key tonic
+    const svg = $('fretSvg');
+    svg.setAttribute('viewBox', CHG.vb);
+    svg.innerHTML = '';
+    drawNeck(svg, CHG);
+    for (let i = 0; i < 6; i++){
+      for (let f = 0; f <= FRETS; f++){
+        const pc = (TUNING[i] + f) % 12;
+        const isKey = pc === state.keyPc;
+        const semi = (pc - state.keyPc + 12) % 12;
+        const x = (f === 0 ? CHG.nutX - 16 : CHG.nutX + (f - 0.5) * CHG.fretW);
+        const y = CHG.strY0 + (5 - i) * CHG.strGap;
+        const gg = el('g', { class:'g-mark ' + (isKey ? 'chordt' : 'scale'), 'data-pc':pc }, svg);
+        gg.dataset.tip = `<span class="t-big">${NOTES[pc]}</span> · string ${6 - i} · fret ${f}<br>` +
+          `degree ${DEG_NAMES[semi]} · interval ${INT_NAMES[semi]}`;
+        gg.addEventListener('click', ev => { ev.stopPropagation(); toggleCenter(pc); });
+        el('circle', { class:'dot', cx:x, cy:y, r:CHG.dotR }, gg);
+        const t = el('text', { x, y:y + 2.8 }, gg);
+        t.textContent = state.display === 'note' ? NOTES[pc]
+          : state.display === 'int' ? INT_NAMES[semi] : DEG_NAMES[semi];
+        if (state.center === pc) el('circle', { class:'cring', cx:x, cy:y, r:CHG.dotR + 2.5 }, gg);
+      }
+    }
+    const rel = state.center != null ? ' · local center ' + NOTES[state.center] : '';
+    $('fretInfo').textContent = 'all notes, degrees from ' + NOTES[state.keyPc] + rel +
+      '  —  click any note to mark the local center';
+    return;
+  }
+
   const selPcs = state.sel ? new Set(CHORDS[state.sel.type].pcs.map(s => (state.sel.root + s) % 12)) : new Set();
   const scale = SCALES.find(s => s.id === state.scale);
   const scalePcs = new Set(scale.steps.map(s => (state.keyPc + s) % 12));
@@ -1224,7 +1284,7 @@ function renderFretboard(){
     (pc, kind) => fretLabelFor(pc, kind === 'chordt' || kind === 'both'),
     (pc, str, f) => {
       const ch = selPcs.has(pc);
-      const ref = (state.center != null) ? state.center : (ch ? state.sel.root : state.keyPc);
+      const ref = ch ? state.sel.root : state.keyPc;
       const semi = (pc - ref + 12) % 12;
       return `<span class="t-big">${NOTES[pc]}</span> · string ${str} · fret ${f}<br>` +
         `degree ${DEG_NAMES[semi]} · interval ${INT_NAMES[semi]}` +
@@ -1235,42 +1295,16 @@ function renderFretboard(){
 
   const selStr = state.sel ? chordName(state.sel.root, state.sel.type) +
     ' · ' + CHORDS[state.sel.type].degs : 'no chord';
-  const rel = state.center != null ? ' · degrees centered on ' + NOTES[state.center] : '';
+  const ctr = state.center != null ? ' · local center ' + NOTES[state.center] : '';
   $('fretInfo').textContent = 'chord: ' + selStr + '  |  scale: ' + scale.name +
-    ' of ' + NOTES[state.keyPc] + rel + '  —  click any note to re-center on it';
+    ' of ' + NOTES[state.keyPc] + ctr + '  —  click any note to mark the local center';
 }
 
 /* ============================================================
-   Chromatic neck (every note)
+   Root render + keyboard + init
    ============================================================ */
-function renderChrom(){
-  const svg = $('chromSvg');
-  svg.setAttribute('viewBox', CHG.vb);
-  svg.innerHTML = '';
-  drawNeck(svg, CHG);
-  for (let i = 0; i < 6; i++){
-    for (let f = 0; f <= FRETS; f++){
-      const pc = (TUNING[i] + f) % 12;
-      const isKey = pc === state.keyPc;
-      const ref = state.center != null ? state.center : state.keyPc;
-      const semi = (pc - ref + 12) % 12;
-      const x = (f === 0 ? CHG.nutX - 16 : CHG.nutX + (f - 0.5) * CHG.fretW);
-      const y = CHG.strY0 + i * CHG.strGap;
-      const gg = el('g', { class:'g-mark ' + (isKey ? 'chordt' : 'scale'), 'data-pc':pc }, svg);
-      gg.dataset.tip = `<span class="t-big">${NOTES[pc]}</span> · string ${6 - i} · fret ${f}<br>` +
-        `degree ${DEG_NAMES[semi]} · interval ${INT_NAMES[semi]}`;
-      gg.addEventListener('click', ev => { ev.stopPropagation(); toggleCenter(pc); });
-      el('circle', { class:'dot', cx:x, cy:y, r:CHG.dotR }, gg);
-      const t = el('text', { x, y:y + 2.8 }, gg);
-      t.textContent = state.display === 'note' ? NOTES[pc]
-        : state.display === 'int' ? INT_NAMES[semi] : DEG_NAMES[semi];
-      if (state.center === pc) el('circle', { class:'cring', cx:x, cy:y, r:CHG.dotR + 2.5 }, gg);
-    }
-  }
-}
-
 /* ============================================================
-   Header controls
+   Header controls (docked at the bottom)
    ============================================================ */
 function buildControls(){
   const disp = [['deg','DEGREES'],['note','NOTES'],['int','INTERVALS']];
@@ -1309,6 +1343,16 @@ function buildControls(){
     b.textContent = sc.tab;
     b.addEventListener('click', () => { state.scale = sc.id; renderAll(); });
   }
+  for (const [v, label] of [['scale','SCALE'],['notes','NOTES']]){
+    const b = h('button', {}, $('fretViewRow'));
+    b.textContent = label;
+    b.addEventListener('click', () => { state.fretView = v; renderAll(); });
+  }
+  $('fretToggle').addEventListener('click', () => {
+    state.fretOpen = !state.fretOpen;
+    renderFretboard();
+    save();
+  });
   $('clearCenter').addEventListener('click', () => { state.center = null; renderAll(); });
 }
 function renderHeader(){
@@ -1324,6 +1368,9 @@ function renderHeader(){
     b.classList.toggle('on', ['names','romans','functions'][i] === state.cofMode));
   [...$('fretFilterRow').children].forEach((b, i) =>
     b.classList.toggle('on', ['chord','scale','both','chrom'][i] === state.filter));
+  // view tab on the fretboard bar
+  [...$('fretViewRow').children].forEach((b, i) =>
+    b.classList.toggle('on', ['scale','notes'][i] === state.fretView));
   const chip = $('centerChip');
   if (state.center == null){
     chip.textContent = '—';
@@ -1348,7 +1395,6 @@ function renderAll(){
   renderKeyTables();
   renderCoF();
   renderFretboard();
-  renderChrom();
   refreshPcEls();
   save();
 }

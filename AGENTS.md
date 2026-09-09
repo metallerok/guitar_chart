@@ -27,15 +27,22 @@ the root string) — do not hand-draw diagrams.
 - App state (persisted in `localStorage` key `guitar-poster-v1`):
   `keyPc`, `keyMode`, `root` (moveable transposition), `display`
   (`deg|note|int`, **degrees-first by design**), `sel {root,type}`,
-  `scale`, `center` (local harmonic center), `cofMode`, `filter`.
+  `scale`, `center` (local center — **visual marker only**, ring + chip),
+  `cofMode`, `filter`, `fretView` (`scale|notes`), `fretOpen` (dock state).
 - `renderAll()` re-renders every section from state; hover never re-renders
   (cross-highlight is done by toggling `.xhl` on cached `[data-pc]` elements).
+- Bottom dock (`.dock-wrap`, `position:sticky; bottom:0`): the fretboard
+  panel (collapsible via `#fretToggle`, persisted as `fretOpen`) plus the
+  global controls (SHOW / KEY / LOCAL CENTER) — always visible while
+  scrolling. The fretboard bar has a view tab `SCALE | NOTES` (NOTES = the
+  old all-notes neck, lives in the same `#fretSvg`); scale tabs + formula +
+  filter are hidden in NOTES view.
 - Degrees display rules: chord tones read against the chord root (with
   per-chord overrides for ♯5/♭5/♭♭7 via `CHORDS[t].ovr`), scale tones against
-  the key tonic (per-scale maps `SCALE_LABELS[scaleId]`, e.g. ♯4 in Lydian),
-  local center overrides both with plain semitone degrees. The label follows
-  the mark's resolved filter kind (in SCALE view a note that is also a chord
-  tone still reads as a scale degree).
+  the key tonic (per-scale maps `SCALE_LABELS[scaleId]`, e.g. ♯4 in Lydian).
+  The label follows the mark's resolved filter kind (in SCALE view a note
+  that is also a chord tone still reads as a scale degree). The local center
+  never rewrites labels — marking only.
 - Moveable diagrams: `SHAPES[t][col].f` = relative frets `[s6..s1]`, -1 =
   muted; `barre:[fromStr,toStr,rel]`. Base fret = `rootFret(pc, rootString)`.
 - Diagram grids are compact: the top line sits right above the highest played
@@ -44,13 +51,18 @@ the root string) — do not hand-draw diagrams.
 - Fretboard section hosts the scales: 10 tabs under the bar (7 modes of major
   + Harmonic Minor / Gypsy / Acoustic), the scale formula sits in the black
   bar (`#fretScaleHdr`). `selectKey` keeps the plain scale of the mode
-  (ionian ↔ aeolian) but never stomps an exotic choice.
+  (ionian ↔ aeolian) but never stomps an exotic choice. The panel itself
+  lives in the bottom dock.
 - Circle of fifths: three clickable rings — outer = major chord, middle =
   its relative minor, inner = its vii° diminished (click selects the chord);
   hub = selected key. All three rings follow the label mode
   `names (C / Am / B°) | romans | functions` relative to the selected key.
 - Chord shape note math: `pc = (TUNING[i] + base + rel) % 12`,
   `base = (rootPc - TUNING[6-rootStr]) mod 12`.
+- Horizontal necks (fretboard, notes view) draw **string 1 on top**, string 6
+  at the bottom (tab/poster convention): row = `strY0 + (5 - i) * strGap` for
+  string index i (0 = low E). Vertical chord diagrams keep string 6 on the
+  left.
 
 ## Verifying changes
 
@@ -69,7 +81,7 @@ the root string) — do not hand-draw diagrams.
    tests/run_tests.sh
    ```
 
-   - `tests/inject_tests.py` generates `tmp/index-test.html` (49 assertions,
+   - `tests/inject_tests.py` generates `tmp/index-test.html` (57 assertions,
      PASS/FAIL panel top-left; the test script **resets persisted state**
      before asserting) and `tmp/index-scenario.html` (C major → V → G7 →
      local center on ♭7) from `index.html` into `tmp/` (gitignored).
